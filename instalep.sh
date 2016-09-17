@@ -31,12 +31,3 @@ read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
     
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
     DIRINFO=$imp_aux #<<< REALIZAR VALIDACIONES!
-
-FREE=`df -H   # free space for all volumes
-  | grep -E '^/dev/xvda3'    # the main disk
-  | awk '{ print $4 }'    # the free space column
-  | cut -d'G' -f1        # strip the G (for gigabytes)
-  | awk -F '.' '{ print $1 }'`    # strip decimal parts
-if [[ $FREE -lt 7 ]]; then
-  echo "Less than 7GB free space left, stopping."
-fi
