@@ -29,5 +29,31 @@ read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
     DIRPROC=$imp_aux #<<< REALIZAR VALIDACIONES!
     
-read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
-    DIRINFO=$imp_aux #<<< REALIZAR VALIDACIONES!
+read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
+    DIRINFO=$rep_aux #<<< REALIZAR VALIDACIONES!
+    
+read -p "Defina el directorio de log ($GRUPO/log):" log_aux
+    DIRLOG=$log_aux #<<< REALIZAR VALIDACIONES!
+    
+read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
+    DIRNOK=$nok_aux #<<< REALIZAR VALIDACIONES!
+    
+read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
+    DATASIZE=$datasize_aux #<<< REALIZAR VALIDACIONES!
+    
+clear
+echo "Directorio de Configuración: $DIRBIN"
+
+echo "Creando Estructuras de directorio. . ."
+mkdir $GRUPO/$DIRBIN
+mkdir $GRUPO/$DIRMAE
+mkdir $GRUPO/$DIRREC
+mkdir $GRUPO/$DIROK
+mkdir $GRUPO/$DIRPROC #ver por qué en el tp tiene otro nombre
+mkdir $GRUPO/$DIRINFO
+mkdir $GRUPO/$DIRLOG
+mkdir $GRUPO/$DIRNOK
+
+echo "Instalando Programas y Funciones"
+echo "Instalando Archivos Maestros y Tablas"
+echo "Fin del proceso. Usuario Fecha y Hora"
