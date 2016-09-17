@@ -10,7 +10,7 @@
 #
 # ******************************************************************
 echo "Iniciando instalación"
-#prueba de commit
+echo "prueba de commit"
 GRUPO='Grupo08'
 mkdir $GRUPO
 mkdir $GRUPO/dirconf
