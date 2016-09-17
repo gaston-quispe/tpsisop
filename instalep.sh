@@ -13,36 +13,93 @@ echo "Iniciando instalación"
 GRUPO='Grupo08'
 mkdir $GRUPO
 mkdir $GRUPO/dirconf
-
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
-    DIRBIN=$dirbin_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$dirbin_aux"]
+      then
+        DIRBIN='bin'
+      else
+        DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
-    DIRMAE=$mae_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$mae_aux"]
+      then
+        DIRMAE='mae'
+      else
+        DIRMAE=$mae_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
 
 read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
-    DIRREC=$nov_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$nov_aux"]
+      then
+        DIRREC='nov'
+      else
+        DIRREC=$nov_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
-    DIROK=$ok_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$ok_aux"]
+      then
+        DIROK='ok'
+      else
+        DIROK=$ok_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
-    DIRPROC=$imp_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$imp_aux"]
+      then
+        DIRPROC='imp'
+      else
+        DIRPROC=$imp_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
-    DIRINFO=$rep_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$rep_aux"]
+      then
+        DIRINFO='rep'
+      else
+        DIRINFO=$rep_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de log ($GRUPO/log):" log_aux
-    DIRLOG=$log_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$log_aux"]
+      then
+        DIRLOG='log'
+      else
+        DIRLOG=$log_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
-    DIRNOK=$nok_aux #<<< REALIZAR VALIDACIONES!
+    if [ -z "$nok_aux"]
+      then
+        DIRNOK='nok'
+      else
+        DIRNOK=$nok_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
     
 read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
-    DATASIZE=$datasize_aux #<<< REALIZAR VALIDACIONES!
-    
+    if [ -z "$datasize_aux"]
+      then
+        DATASIZE=100
+      else
+        DATASIZE=$datasize_aux #<<< REALIZAR MAS VALIDACIONES!
+    fi
+
+#Falta validacion de espacio en disco.
+
+ 
 clear
 echo "Directorio de Configuración: $DIRBIN"
+echo "Directorio de Ejecutables: ($GRUPO/DIRBIN mostrar path y listar archivos)"
+echo "Directorio de Maestros y Tablas: ($GRUPO/DIRMAE mostrar path y listar archivos)"
+echo "Directorio de Recepción de Novedades: ($GRUPO/DIRREC mostrar path)"
+echo "Directorio de Archivos Aceptados: ($GRUPO/DIROK mostrar path)"
+echo "Directorio de Archivos Procesados: ($GRUPO/DIRPROC mostrar path)"
+echo "Directorio de Archivos de Reportes: ($GRUPO/DIRINFO mostrar path)"
+echo "Directorio de Archivos de Log: ($GRUPO/DIRLOG mostrar path)"
+echo "Directorio de Archivos Rechazados: ($GRUPO/DIRNOK mostrar path)"
+echo "Estado de la instalación: LISTA"
+echo "Desea continuar con la instalación? (Si – No)"
 
 echo "Creando Estructuras de directorio. . ."
 mkdir $GRUPO/$DIRBIN
