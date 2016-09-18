@@ -1,3 +1,5 @@
 Grupo08
-DIR*
+*.tgz
+*.tar
+*.gzip
 ~*
