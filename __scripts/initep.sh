@@ -21,7 +21,6 @@ function checkenv {
   fi
 }
 
-
 if checkenv;
   then
     echo "Ambiente ya inicializado, para reiniciar termine la sesión e ingrese nuevamente";
@@ -68,4 +67,21 @@ for filename in $GRUPO/$DIRMAE/*.csv; do
   fi
 done
 
+log_command=$GRUPO/$DIRBIN/logep.sh
 
+$log_command "Estado del Sistema: INICIALIZADO"
+
+echo "¿Desea efectuar la activación de Demonep? Si – No:"
+select activate_daemon in "Si" "No"; do
+    case $activate_daemon in
+        Si )
+            $GRUPO/$DIRBIN/demonep.sh &;
+            $log_command "Demonep corriendo bajo el no. $!";
+            break;;
+        No )
+            echo "Para arrancar a mano tiene que ejecutar: \n";
+            echo "$ demonep.sh &";
+            break;;
+        * ) echo "Por favor, ingrese una opción válida.";;
+    esac
+done
