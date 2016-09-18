@@ -147,5 +147,9 @@ echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
 echo "Instalando Programas y Funciones"
+cp __scripts/* $GRUPO/$DIRBIN
+
 echo "Instalando Archivos Maestros y Tablas"
+cp __mae/* $GRUPO/$DIRMAE
+
 echo "Fin del proceso. Usuario Fecha y Hora"
