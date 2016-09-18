@@ -18,6 +18,19 @@ ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
 
 mkdir $GRUPO
 
+if [ -f $ARCHCONF ]
+then
+        echo "Directorio de Configuración: ($GRUPO/$DIRCONF y listar archivos)"
+        echo "Directorio de Ejecutables: ($GRUPO/$DIRBIN listar archivos)"
+        echo "Directorio de Maestros y Tablas: ($GRUPO/$DIRMAE y listar archivos)"
+        echo "Directorio de Recepción de Novedades: ($GRUPO/$DIRREC)"
+        echo "Directorio de Archivos Aceptados: ($GRUPO/$DIROK)"
+        echo "Directorio de Archivos Procesados: ($GRUPO/$DIRPROC)"
+        echo "Directorio de Archivos de Reportes: ($GRUPO/$DIRINFO)"
+        echo "Directorio de Archivos de Log: ($GRUPO/$DIRLOG)"
+        echo "Directorio de Archivos Rechazados: ($GRUPO/$DIRNOK)"
+        echo "Estado de la instalación: LISTA"
+else
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
     if [ -z "$dirbin_aux" ]
     then
@@ -103,19 +116,7 @@ do
       break
     fi
 done
-
-#Falta validacion de espacio en disco.
-
-echo "Directorio de Configuración: ($GRUPO/$DIRCONF y listar archivos)"
-echo "Directorio de Ejecutables: ($GRUPO/$DIRBIN listar archivos)"
-echo "Directorio de Maestros y Tablas: ($GRUPO/$DIRMAE y listar archivos)"
-echo "Directorio de Recepción de Novedades: ($GRUPO/$DIRREC)"
-echo "Directorio de Archivos Aceptados: ($GRUPO/$DIROK)"
-echo "Directorio de Archivos Procesados: ($GRUPO/$DIRPROC)"
-echo "Directorio de Archivos de Reportes: ($GRUPO/$DIRINFO)"
-echo "Directorio de Archivos de Log: ($GRUPO/$DIRLOG)"
-echo "Directorio de Archivos Rechazados: ($GRUPO/$DIRNOK)"
-echo "Estado de la instalación: LISTA"
+fi
 echo "Desea continuar con la instalación? (Si – No)"
 
 echo "Creando Estructuras de directorio. . ."
