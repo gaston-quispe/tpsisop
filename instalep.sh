@@ -117,6 +117,7 @@ echo "Estado de la instalación: LISTA"
 echo "Desea continuar con la instalación? (Si – No)"
 
 echo "Creando Estructuras de directorio. . ."
+mkdir $GRUPO/$DIRCONF
 mkdir $GRUPO/$DIRBIN
 mkdir $GRUPO/$DIRMAE
 mkdir $GRUPO/$DIRREC
@@ -125,6 +126,15 @@ mkdir $GRUPO/$DIRPROC #ver por qué en el tp tiene otro nombre
 mkdir $GRUPO/$DIRINFO
 mkdir $GRUPO/$DIRLOG
 mkdir $GRUPO/$DIRNOK
+
+#Escritura de archivo instalep.conf
+ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
+if [ -f $ARCHCONF ]
+then
+    rm $ARCHCONF
+fi
+touch $ARCHCONF
+echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %p") >> $ARCHCONF
 
 echo "Instalando Programas y Funciones"
 echo "Instalando Archivos Maestros y Tablas"
