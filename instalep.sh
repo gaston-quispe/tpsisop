@@ -11,11 +11,13 @@
 # ******************************************************************
 
 echo "Iniciando instalación"
-echo "prueba de commit"
+
 GRUPO=$PWD'/Grupo08'
 DIRCONF='dirconf'
+ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
+
 mkdir $GRUPO
-mkdir $GRUPO'/'$DIRCONF
+
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
     if [ -z "$dirbin_aux" ]
     then
@@ -128,13 +130,21 @@ mkdir $GRUPO/$DIRLOG
 mkdir $GRUPO/$DIRNOK
 
 #Escritura de archivo instalep.conf
-ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
 if [ -f $ARCHCONF ]
 then
     rm $ARCHCONF
 fi
 touch $ARCHCONF
-echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %p") >> $ARCHCONF
+
+echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRMAE=$DIRMAE=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRREC=$DIRREC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIROK=$DIROK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRPROC=$DIRPROC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
 echo "Instalando Programas y Funciones"
 echo "Instalando Archivos Maestros y Tablas"
