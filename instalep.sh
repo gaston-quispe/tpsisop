@@ -9,21 +9,22 @@
 # Autores: Gaston Quispe, Valeria Rocha.
 #
 # ******************************************************************
+
 echo "Iniciando instalación"
 echo "prueba de commit"
 GRUPO='Grupo08'
 mkdir $GRUPO
 mkdir $GRUPO/dirconf
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
-    if [ -z "$dirbin_aux"]
-      then
-        DIRBIN='bin'
-      else
-        DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
+    if [ -z "$dirbin_aux" ]
+    then
+      DIRBIN='bin'
+    else
+      DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
-    if [ -z "$mae_aux"]
+    if [ -z "$mae_aux" ]
       then
         DIRMAE='mae'
       else
@@ -31,7 +32,7 @@ read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
     fi
 
 read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
-    if [ -z "$nov_aux"]
+    if [ -z "$nov_aux" ]
       then
         DIRREC='nov'
       else
@@ -39,7 +40,7 @@ read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
     fi
     
 read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
-    if [ -z "$ok_aux"]
+    if [ -z "$ok_aux" ]
       then
         DIROK='ok'
       else
@@ -47,7 +48,7 @@ read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
     fi
     
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
-    if [ -z "$imp_aux"]
+    if [ -z "$imp_aux" ]
       then
         DIRPROC='imp'
       else
@@ -55,7 +56,7 @@ read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
     fi
     
 read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
-    if [ -z "$rep_aux"]
+    if [ -z "$rep_aux" ]
       then
         DIRINFO='rep'
       else
@@ -63,7 +64,7 @@ read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
     fi
     
 read -p "Defina el directorio de log ($GRUPO/log):" log_aux
-    if [ -z "$log_aux"]
+    if [ -z "$log_aux" ]
       then
         DIRLOG='log'
       else
@@ -71,25 +72,37 @@ read -p "Defina el directorio de log ($GRUPO/log):" log_aux
     fi
     
 read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
-    if [ -z "$nok_aux"]
+    if [ -z "$nok_aux" ]
       then
         DIRNOK='nok'
       else
         DIRNOK=$nok_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
-    
-read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
-    if [ -z "$datasize_aux"]
-      then
-        DATASIZE=100
-      else
-        DATASIZE=$datasize_aux #<<< REALIZAR MAS VALIDACIONES!
+
+while true
+do
+  read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
+    if [ -z "$datasize_aux" ]
+    then
+      datasize_aux=100
     fi
+
+    espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
+    if [ $datasize_aux -gt $espacioDisponible ]
+    then
+      echo "Insuficiente espacio en disco."
+      echo "Espacio disponible:" $espacioDisponible "Mb."
+      echo "Espacio requerido:" $datasize_aux "Mb."
+      echo "Intentelo nuevamente."
+      continue
+    else
+      DATASIZE=$datasize_aux #<<< REALIZAR MAS VALIDACIONES!
+      break
+    fi
+done
 
 #Falta validacion de espacio en disco.
 
- 
-clear
 echo "Directorio de Configuración: $DIRBIN"
 echo "Directorio de Ejecutables: ($GRUPO/DIRBIN mostrar path y listar archivos)"
 echo "Directorio de Maestros y Tablas: ($GRUPO/DIRMAE mostrar path y listar archivos)"
