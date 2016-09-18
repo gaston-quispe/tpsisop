@@ -12,9 +12,10 @@
 
 echo "Iniciando instalación"
 echo "prueba de commit"
-GRUPO='Grupo08'
+GRUPO=$PWD'/Grupo08'
+DIRCONF='dirconf'
 mkdir $GRUPO
-mkdir $GRUPO/dirconf
+mkdir $GRUPO'/'$DIRCONF
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
     if [ -z "$dirbin_aux" ]
     then
@@ -103,15 +104,15 @@ done
 
 #Falta validacion de espacio en disco.
 
-echo "Directorio de Configuración: $DIRBIN"
-echo "Directorio de Ejecutables: ($GRUPO/DIRBIN mostrar path y listar archivos)"
-echo "Directorio de Maestros y Tablas: ($GRUPO/DIRMAE mostrar path y listar archivos)"
-echo "Directorio de Recepción de Novedades: ($GRUPO/DIRREC mostrar path)"
-echo "Directorio de Archivos Aceptados: ($GRUPO/DIROK mostrar path)"
-echo "Directorio de Archivos Procesados: ($GRUPO/DIRPROC mostrar path)"
-echo "Directorio de Archivos de Reportes: ($GRUPO/DIRINFO mostrar path)"
-echo "Directorio de Archivos de Log: ($GRUPO/DIRLOG mostrar path)"
-echo "Directorio de Archivos Rechazados: ($GRUPO/DIRNOK mostrar path)"
+echo "Directorio de Configuración: ($GRUPO/$DIRCONF y listar archivos)"
+echo "Directorio de Ejecutables: ($GRUPO/$DIRBIN listar archivos)"
+echo "Directorio de Maestros y Tablas: ($GRUPO/$DIRMAE y listar archivos)"
+echo "Directorio de Recepción de Novedades: ($GRUPO/$DIRREC)"
+echo "Directorio de Archivos Aceptados: ($GRUPO/$DIROK)"
+echo "Directorio de Archivos Procesados: ($GRUPO/$DIRPROC)"
+echo "Directorio de Archivos de Reportes: ($GRUPO/$DIRINFO)"
+echo "Directorio de Archivos de Log: ($GRUPO/$DIRLOG)"
+echo "Directorio de Archivos Rechazados: ($GRUPO/$DIRNOK)"
 echo "Estado de la instalación: LISTA"
 echo "Desea continuar con la instalación? (Si – No)"
 
