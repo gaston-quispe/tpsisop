@@ -6,7 +6,7 @@
 # 75.08 Sistemas Operativos
 # Catedra Ing. Osvaldo Clua
 #
-# Autores: Gaston Quispe, Valeria Rocha.
+# Autores: Grupo 08
 #
 # ******************************************************************
 
@@ -117,19 +117,28 @@ do
     fi
 done
 fi
-echo "Desea continuar con la instalación? (Si – No)"
 
-echo "Creando Estructuras de directorio. . ."
-mkdir $GRUPO/$DIRCONF
-mkdir $GRUPO/$DIRBIN
-mkdir $GRUPO/$DIRMAE
-mkdir $GRUPO/$DIRREC
-mkdir $GRUPO/$DIROK
-mkdir $GRUPO/$DIRPROC #ver por qué en el tp tiene otro nombre
-mkdir $GRUPO/$DIRINFO
-mkdir $GRUPO/$DIRLOG
-mkdir $GRUPO/$DIRNOK
-
+echo "Desea continuar con la instalación? (Si – No):"
+select continuar_instalacion in "Si" "No"; do
+	case $continuar_instalacion in
+		Si )
+			echo "Creando Estructuras de directorio. . ."
+			mkdir $GRUPO/$DIRCONF
+			mkdir $GRUPO/$DIRBIN
+			mkdir $GRUPO/$DIRMAE
+			mkdir $GRUPO/$DIRREC
+			mkdir $GRUPO/$DIROK
+			mkdir $GRUPO/$DIRPROC #ver por qué en el tp tiene otro nombre
+			mkdir $GRUPO/$DIRINFO
+			mkdir $GRUPO/$DIRLOG
+			mkdir $GRUPO/$DIRNOK
+			break;;
+		No)
+			#Volver a pedir nombres de directorios
+			break;;
+		* ) echo "Ingrese una opción válida.";;
+	esac
+done
 #Escritura de archivo instalep.conf
 if [ -f $ARCHCONF ]
 then
