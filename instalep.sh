@@ -132,34 +132,36 @@ select continuar_instalacion in "Si" "No"; do
 			mkdir $GRUPO/$DIRINFO
 			mkdir $GRUPO/$DIRLOG
 			mkdir $GRUPO/$DIRNOK
-			break;;
-		No)
-			#Volver a pedir nombres de directorios
-			break;;
-		* ) echo "Ingrese una opción válida.";;
-	esac
+					
+			#Escritura de archivo instalep.conf
+			if [ -f $ARCHCONF ]
+			then
+    				rm $ARCHCONF
+			fi
+			touch $ARCHCONF
+
+			echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRMAE=$DIRMAE=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRREC=$DIRREC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIROK=$DIROK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRPROC=$DIRPROC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+			echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+
+			echo "Instalando Programas y Funciones"
+			cp __scripts/* $GRUPO/$DIRBIN
+
+			echo "Instalando Archivos Maestros y Tablas"
+			cp __mae/* $GRUPO/$DIRMAE
+                        break;;
+                No)
+                        #Volver a pedir nombres de directorios
+                        break;;
+                * ) echo "Ingrese una opción válida.";;
+        esac
 done
-#Escritura de archivo instalep.conf
-if [ -f $ARCHCONF ]
-then
-    rm $ARCHCONF
-fi
-touch $ARCHCONF
 
-echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRMAE=$DIRMAE=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRREC=$DIRREC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIROK=$DIROK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRPROC=$DIRPROC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-
-echo "Instalando Programas y Funciones"
-cp __scripts/* $GRUPO/$DIRBIN
-
-echo "Instalando Archivos Maestros y Tablas"
-cp __mae/* $GRUPO/$DIRMAE
-
-echo "Fin del proceso. Usuario Fecha y Hora"
+echo "Fin del proceso. Usuario:"
+date "+Fecha: %d/%m/%y Hora: %H:%M:%S"
