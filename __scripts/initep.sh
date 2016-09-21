@@ -13,7 +13,6 @@
 # Este script se tiene que ejecutar de la siguiente manera:
 # . ./initep.sh /path/to/instalep.conf
 
-# Función que verifica que todas las variables necesarias estén seteadas
 function checkenv {
   if [[ -z $GRUPO || -z $DIRBIN || -z $DIRMAE || -z $DIRREC || -z $DIROK ||
         -z $DIRPROC || -z $DIRINFO || -z $DIRLOG || -z $DIRNOK ]]; then
@@ -21,7 +20,65 @@ function checkenv {
   fi
 }
 
-if checkenv;
+
+# Función que verifica que todas las variables necesarias estén seteadas
+function verificarVariables {
+	instalacionExitosa=0
+
+	if [ -z $GRUPO ]; then
+		echo "Falta el archivo de configuracion del instalep, por favor reinstalar"
+		instalacionExitosa=1
+	fi
+
+	 if [ -z $DIRBIN ]; then
+                echo "Directorio de Ejecutables  no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi
+
+	if [ -z $DIRMAE ]; then
+		echo "Directorio maestro no creado, por favor reinstalar"
+		instalacionExitosa=1
+	fi
+
+        if [ -z $DIRREC ]; then
+                echo "Directorio de Recepcion de Novedades no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi
+
+        if [ -z $DIROK ]; then
+                echo "Directorio de Archivos Aceptados  no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi
+
+        if [ -z $DIRPROC ]; then
+                echo "Directorio de Archivos Procesados  no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi
+
+        if [ -z $DIRINFO ]; then
+                echo "Directorio de Reportes  no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi
+
+	if [ -z $DIRLOG ]; then
+		echo "Falta el directorio de archivos de log, por favor reinstalar"
+		instalacionExitosa=1 
+	fi
+
+	if [ -z $DIRMAE ]; then
+                echo "Directorio de Archivos rechazados  no creado, por favor reinstalar"
+                instalacionExitosa=1
+        fi		
+
+ 	if [ $instalacionExitosa == 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+	
+}
+
+if  checkenv;
   then
     echo "Ambiente ya inicializado, para reiniciar termine la sesión e ingrese nuevamente";
     return 0;
@@ -41,7 +98,7 @@ done < "$1"
 
 
 # Verifico que todas las variables necesarias estén seteadas
-if ! checkenv;
+if ! verificarVariables;
   then
     echo "No se encontró uno de las variables necesarias en el archivo de configuración!";
     return 1;
