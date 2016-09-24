@@ -16,82 +16,84 @@ GRUPO=$PWD'/Grupo08'
 DIRCONF='dirconf'
 ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
 
+#Nombres de directorios por defecto
+DIRBIN='bin'
+DIRMAE='mae'
+DIRREC='nov'
+DIROK='ok'
+DIRPROC='imp'
+DIRINFO='rep'
+DIRLOG='log'
+DIRNOK='nov'
+
 mkdir $GRUPO
+
+function listarDirectorios {
+        echo "Directorio de Configuración: $GRUPO/$DIRCONF"
+	ls -l $GRUPO/$DIRCONF
+        echo "Directorio de Ejecutables: $GRUPO/$DIRBIN"
+	ls -l $GRUPO/$DIRBIN
+        echo "Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
+	ls -l $GRUPO/$DIRMAE
+        echo "Directorio de Recepción de Novedades: $GRUPO/$DIRREC"
+        echo "Directorio de Archivos Aceptados: $GRUPO/$DIROK"
+        echo "Directorio de Archivos Procesados: $GRUPO/$DIRPROC"
+        echo "Directorio de Archivos de Reportes: $GRUPO/$DIRINFO"
+        echo "Directorio de Archivos de Log: $GRUPO/$DIRLOG"
+        echo "Directorio de Archivos Rechazados: $GRUPO/$DIRNOK"
+        echo "Estado de la instalación: LISTA"
+}
 
 if [ -f $ARCHCONF ]
 then
-        echo "Directorio de Configuración: ($GRUPO/$DIRCONF y listar archivos)"
-        echo "Directorio de Ejecutables: ($GRUPO/$DIRBIN listar archivos)"
-        echo "Directorio de Maestros y Tablas: ($GRUPO/$DIRMAE y listar archivos)"
-        echo "Directorio de Recepción de Novedades: ($GRUPO/$DIRREC)"
-        echo "Directorio de Archivos Aceptados: ($GRUPO/$DIROK)"
-        echo "Directorio de Archivos Procesados: ($GRUPO/$DIRPROC)"
-        echo "Directorio de Archivos de Reportes: ($GRUPO/$DIRINFO)"
-        echo "Directorio de Archivos de Log: ($GRUPO/$DIRLOG)"
-        echo "Directorio de Archivos Rechazados: ($GRUPO/$DIRNOK)"
-        echo "Estado de la instalación: LISTA"
+	listarDirectorios
+	exit 0
 else
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
-    if [ -z "$dirbin_aux" ]
+    if [ ! -z "$dirbin_aux" ]
     then
-      DIRBIN='bin'
-    else
-      DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
+     	DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
-    if [ -z "$mae_aux" ]
-      then
-        DIRMAE='mae'
-      else
+    if [ ! -z "$mae_aux" ]
+    then
         DIRMAE=$mae_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
 
 read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
-    if [ -z "$nov_aux" ]
-      then
-        DIRREC='nov'
-      else
+    if [ ! -z "$nov_aux" ]
+    then
         DIRREC=$nov_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
-    if [ -z "$ok_aux" ]
-      then
-        DIROK='ok'
-      else
+    if [ ! -z "$ok_aux" ]
+    then
         DIROK=$ok_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
-    if [ -z "$imp_aux" ]
-      then
-        DIRPROC='imp'
-      else
+    if [ ! -z "$imp_aux" ]
+    then
         DIRPROC=$imp_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
-    if [ -z "$rep_aux" ]
-      then
-        DIRINFO='rep'
-      else
+    if [ ! -z "$rep_aux" ]
+    then
         DIRINFO=$rep_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de log ($GRUPO/log):" log_aux
-    if [ -z "$log_aux" ]
-      then
-        DIRLOG='log'
-      else
+    if [ ! -z "$log_aux" ]
+    then
         DIRLOG=$log_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
     
 read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
-    if [ -z "$nok_aux" ]
-      then
-        DIRNOK='nok'
-      else
+    if [ ! -z "$nok_aux" ]
+    then
         DIRNOK=$nok_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
 
@@ -118,6 +120,9 @@ do
 done
 fi
 
+clear
+listarDirectorios
+
 echo "Desea continuar con la instalación? (Si – No):"
 select continuar_instalacion in "Si" "No"; do
 	case $continuar_instalacion in
@@ -128,7 +133,7 @@ select continuar_instalacion in "Si" "No"; do
 			mkdir $GRUPO/$DIRMAE
 			mkdir $GRUPO/$DIRREC
 			mkdir $GRUPO/$DIROK
-			mkdir $GRUPO/$DIRPROC #ver por qué en el tp tiene otro nombre
+			mkdir $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
 			mkdir $GRUPO/$DIRINFO
 			mkdir $GRUPO/$DIRLOG
 			mkdir $GRUPO/$DIRNOK
