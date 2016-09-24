@@ -126,18 +126,18 @@ done
 
 log_command=$GRUPO/$DIRBIN/logep.sh
 
-$log_command "Estado del Sistema: INICIALIZADO"
+$log_command "initep" "Estado del Sistema: INICIALIZADO" "INFO" "1"
 
 echo "¿Desea efectuar la activación de Demonep? Si – No:"
 select activate_daemon in "Si" "No"; do
     case $activate_daemon in
         Si )
-            $GRUPO/$DIRBIN/demonep.sh &;
-            $log_command "Demonep corriendo bajo el no. $!";
+            $GRUPO/$DIRBIN/demonep.sh &
+            $log_command "initep" "Demonep corriendo bajo el no. $!" "INFO" "1" ;
             break;;
         No )
-            echo "Para arrancar a mano tiene que ejecutar: \n";
-            echo "$ demonep.sh &";
+            echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio bin: \n";
+            echo "$ ./(PATH)/demonep.sh &";
             break;;
         * ) echo "Por favor, ingrese una opción válida.";;
     esac
