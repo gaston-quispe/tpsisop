@@ -44,11 +44,7 @@ function listarDirectorios {
         echo "Estado de la instalación: LISTA"
 }
 
-if [ -f $ARCHCONF ]
-then
-	listarDirectorios
-	exit 0
-else
+function setearDirectorios {
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
     if [ ! -z "$dirbin_aux" ]
     then
@@ -90,7 +86,7 @@ read -p "Defina el directorio de log ($GRUPO/log):" log_aux
     then
         DIRLOG=$log_aux #<<< REALIZAR MAS VALIDACIONES!
     fi
-    
+   
 read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
     if [ ! -z "$nok_aux" ]
     then
@@ -118,54 +114,77 @@ do
       break
     fi
 done
+}
+
+#Detecto sistema ya instalado
+if [ -f $ARCHCONF ]
+then
+	listarDirectorios
+	exit 0
+else
+	setearDirectorios
 fi
 
 clear
 listarDirectorios
 
-echo "Desea continuar con la instalación? (Si – No):"
-select continuar_instalacion in "Si" "No"; do
-	case $continuar_instalacion in
-		Si )
-			echo "Creando Estructuras de directorio. . ."
-			mkdir $GRUPO/$DIRCONF
-			mkdir $GRUPO/$DIRBIN
-			mkdir $GRUPO/$DIRMAE
-			mkdir $GRUPO/$DIRREC
-			mkdir $GRUPO/$DIROK
-			mkdir $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
-			mkdir $GRUPO/$DIRINFO
-			mkdir $GRUPO/$DIRLOG
-			mkdir $GRUPO/$DIRNOK
+cantidadIntentos=0
+intentosPermitidos=2
+instalacionFinalizada=false
+while [ $cantidadIntentos -ne $intentosPermitidos ] && [ $instalacionFinalizada = false ]
+do
+	echo "Desea continuar con la instalación? (Si – No):"
+	select continuar_instalacion in "Si" "No"; do
+		case $continuar_instalacion in
+			Si )
+				echo "Creando Estructuras de directorio. . ."
+				mkdir $GRUPO/$DIRCONF
+				mkdir $GRUPO/$DIRBIN
+				mkdir $GRUPO/$DIRMAE
+				mkdir $GRUPO/$DIRREC
+				mkdir $GRUPO/$DIROK
+				mkdir $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
+				mkdir $GRUPO/$DIRINFO
+				mkdir $GRUPO/$DIRLOG
+				mkdir $GRUPO/$DIRNOK
 					
-			#Escritura de archivo instalep.conf
-			if [ -f $ARCHCONF ]
-			then
-    				rm $ARCHCONF
-			fi
-			touch $ARCHCONF
+				#Escritura de archivo instalep.conf
+				if [ -f $ARCHCONF ]
+				then
+	    				rm $ARCHCONF
+				fi
+				touch $ARCHCONF
 
-			echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRMAE=$DIRMAE=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRREC=$DIRREC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIROK=$DIROK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRPROC=$DIRPROC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
-			echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRMAE=$DIRMAE=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRREC=$DIRREC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIROK=$DIROK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRPROC=$DIRPROC=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
-			echo "Instalando Programas y Funciones"
-			cp __scripts/* $GRUPO/$DIRBIN
+				echo "Instalando Programas y Funciones"
+				cp __scripts/* $GRUPO/$DIRBIN
 
-			echo "Instalando Archivos Maestros y Tablas"
-			cp __mae/* $GRUPO/$DIRMAE
-                        break;;
-                No)
-                        #Volver a pedir nombres de directorios
-                        break;;
-                * ) echo "Ingrese una opción válida.";;
-        esac
+				echo "Instalando Archivos Maestros y Tablas"
+				cp __mae/* $GRUPO/$DIRMAE
+				instalacionFinalizada=true
+		                break;;
+		        No)
+				((cantidadIntentos++))
+				if [ $cantidadIntentos -ne $intentosPermitidos ]
+				then
+			                #Volver a pedir nombres de directorios
+					setearDirectorios
+				else
+					instalacionFinalizada=true
+				fi
+		                break;;
+		        * ) echo "Ingrese una opción válida.";;
+		esac
+	done
 done
 
 echo "Fin del proceso. Usuario:"
