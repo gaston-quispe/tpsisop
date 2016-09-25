@@ -13,6 +13,8 @@
 # Este script se tiene que ejecutar de la siguiente manera:
 # . ./initep.sh /path/to/instalep.conf
 
+log_command=$GRUPO/$DIRBIN/logep.sh
+
 function checkenv {
   if [[ -z $GRUPO || -z $DIRBIN || -z $DIRMAE || -z $DIRREC || -z $DIROK ||
         -z $DIRPROC || -z $DIRINFO || -z $DIRLOG || -z $DIRNOK ]]; then
@@ -26,47 +28,47 @@ function verificarVariables {
 	instalacionExitosa=0
 
 	if [ -z $GRUPO ]; then
-		echo "Falta el archivo de configuracion del instalep, por favor reinstalar"
+		$log_command "initep" "Falta el archivo de configuración del instalep, por favor reinstalar" "ERR" "1"
 		instalacionExitosa=1
 	fi
 
 	 if [ -z $DIRBIN ]; then
-                echo "Directorio de Ejecutables  no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Ejecutables no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi
 
 	if [ -z $DIRMAE ]; then
-		echo "Directorio maestro no creado, por favor reinstalar"
+		$log_command "initep" "Directrio maestro no creado, por favor reinstalar" "ERR" "1"
 		instalacionExitosa=1
 	fi
 
         if [ -z $DIRREC ]; then
-                echo "Directorio de Recepcion de Novedades no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Recepción de Novedades no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi
 
         if [ -z $DIROK ]; then
-                echo "Directorio de Archivos Aceptados  no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Archivos Aceptados no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi
 
         if [ -z $DIRPROC ]; then
-                echo "Directorio de Archivos Procesados  no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Archivos Procesados no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi
 
         if [ -z $DIRINFO ]; then
-                echo "Directorio de Reportes  no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Reportes no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi
 
 	if [ -z $DIRLOG ]; then
-		echo "Falta el directorio de archivos de log, por favor reinstalar"
+		$log_command "initep" "Falta el directorio de archivos de log, por favor reinstalar" "ERR" "1"
 		instalacionExitosa=1 
 	fi
 
 	if [ -z $DIRMAE ]; then
-                echo "Directorio de Archivos rechazados  no creado, por favor reinstalar"
+		$log_command "initep" "Directorio de Archivos rechazados no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
         fi		
 
@@ -74,20 +76,19 @@ function verificarVariables {
 		return 0
 	else
 		return 1
-	fi
-	
+	fi	
 }
 
 if  checkenv;
-  then
-    echo "Ambiente ya inicializado, para reiniciar termine la sesión e ingrese nuevamente";
-    return 0;
+then
+	$log_command "initep" "Ambiente ya inicializado, para reiniciar termine la sesión e ingrese nuevamente" "WAR" "1"
+    	return 0;
 fi
 
 if [ ! -f $1 ]
-  then
-    echo "Archivo de configuración no pasado!";
-    return 1;
+then
+	$log_command "initep" "Falta archivo de configuración - parámentro obligatorio" "ERR" "1"
+	return 1;
 fi
 
 # Seteo todas las lineas del archivo de configuración como variables de entorno
@@ -99,9 +100,9 @@ done < "$1"
 
 # Verifico que todas las variables necesarias estén seteadas
 if ! verificarVariables;
-  then
-    echo "No se encontró uno de las variables necesarias en el archivo de configuración!";
-    return 1;
+then
+	$log_command "initep" "No se encontraron algunas de las variables necesarias en el archivo de configuración" "ERR" "1"
+	return 1;
 fi
 
 
@@ -111,7 +112,7 @@ export PATH=$PATH:$GRUPO/$DIRBIN
 for filename in $GRUPO/$DIRBIN/*.sh; do
   chmod +x $filename;
   if [ $? -ne 0  ]; then
-    echo "No se pudieron agregar permisos de ejecucion al script $filename!";
+	$log_command "initep" "No se pudo agregar el permiso de ejecución al script $filename" "ERR" "1"
     return 1;
   fi
 done
@@ -119,12 +120,10 @@ done
 for filename in $GRUPO/$DIRMAE/*.csv; do
   chmod +r $filename;
   if [ $? -ne 0  ]; then
-    echo "No se pudieron agregar permisos de lectura al script $filename!";
+	$log_command "initep" "No se pudo agregar el permiso de lectura al script $filename" "WAR" "1"
     return 1;
   fi
 done
-
-log_command=$GRUPO/$DIRBIN/logep.sh
 
 $log_command "initep" "Estado del Sistema: INICIALIZADO" "INFO" "1"
 
