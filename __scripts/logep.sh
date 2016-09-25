@@ -23,6 +23,11 @@ archivo=$GRUPO/$DIRLOG/$1.log
 if [ ! -f $achivo ]
 then
 	touch $archivo
+elif [ stat -c%s "$archivo" > 1000 ]
+then
+	# TODO: usar movep para no perder el log anterior
+	> $archivo
+	echo "Log Excedido" >> $archivo	
 fi
 
 echo  "$2  -  $3" >> $archivo
