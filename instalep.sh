@@ -10,87 +10,82 @@
 #
 # ******************************************************************
 
-echo "Iniciando instalación"
-
-GRUPO=$PWD'/Grupo08'
-DIRCONF='dirconf'
-ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
-
-#Nombres de directorios por defecto
-DIRBIN='bin'
-DIRMAE='mae'
-DIRREC='nov'
-DIROK='ok'
-DIRPROC='imp'
-DIRINFO='rep'
-DIRLOG='log'
-DIRNOK='nov'
-
-mkdir $GRUPO
+#####################################################
+#################### FUNCIONES ######################
+#####################################################
 
 function listarDirectorios {
-        echo "Directorio de Configuración: $GRUPO/$DIRCONF"
-	ls -l $GRUPO/$DIRCONF
-        echo "Directorio de Ejecutables: $GRUPO/$DIRBIN"
-	ls -l $GRUPO/$DIRBIN
-        echo "Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
-	ls -l $GRUPO/$DIRMAE
-        echo "Directorio de Recepción de Novedades: $GRUPO/$DIRREC"
-        echo "Directorio de Archivos Aceptados: $GRUPO/$DIROK"
-        echo "Directorio de Archivos Procesados: $GRUPO/$DIRPROC"
-        echo "Directorio de Archivos de Reportes: $GRUPO/$DIRINFO"
-        echo "Directorio de Archivos de Log: $GRUPO/$DIRLOG"
-        echo "Directorio de Archivos Rechazados: $GRUPO/$DIRNOK"
-        echo "Estado de la instalación: LISTA"
+    echo ">Directorio de Configuración: $GRUPO/$DIRCONF"
+    if [ -f $GRUPO/$DIRCONF ]
+    then
+       ls -1 $GRUPO/$DIRCONF
+    fi
+    echo ">Directorio de Ejecutables: $GRUPO/$DIRBIN"
+    if [ -f $GRUPO/$DIRBIN ]
+    then
+        ls -1 $GRUPO/$DIRBIN
+    fi
+    echo ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
+    if [ -f $GRUPO/$DIRMAE ]
+    then
+    	ls -1 $GRUPO/$DIRMAE
+    fi
+    echo ">Directorio de Recepción de Novedades: $GRUPO/$DIRREC"
+    echo ">Directorio de Archivos Aceptados: $GRUPO/$DIROK"
+    echo ">Directorio de Archivos Procesados: $GRUPO/$DIRPROC"
+    echo ">Directorio de Archivos de Reportes: $GRUPO/$DIRINFO"
+    echo ">Directorio de Archivos de Log: $GRUPO/$DIRLOG"
+    echo ">Directorio de Archivos Rechazados: $GRUPO/$DIRNOK"
+    echo ">Estado de la instalación: LISTA"
 }
 
 function setearDirectorios {
 read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
     if [ ! -z "$dirbin_aux" ]
     then
-     	DIRBIN=$dirbin_aux #<<< REALIZAR MAS VALIDACIONES!
+     	DIRBIN=$dirbin_aux
     fi
     
 read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
     if [ ! -z "$mae_aux" ]
     then
-        DIRMAE=$mae_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRMAE=$mae_aux
     fi
 
 read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
     if [ ! -z "$nov_aux" ]
     then
-        DIRREC=$nov_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRREC=$nov_aux
     fi
     
 read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
     if [ ! -z "$ok_aux" ]
     then
-        DIROK=$ok_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIROK=$ok_aux
     fi
     
 read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
     if [ ! -z "$imp_aux" ]
     then
-        DIRPROC=$imp_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRPROC=$imp_aux
     fi
     
 read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
     if [ ! -z "$rep_aux" ]
     then
-        DIRINFO=$rep_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRINFO=$rep_aux
     fi
     
 read -p "Defina el directorio de log ($GRUPO/log):" log_aux
     if [ ! -z "$log_aux" ]
     then
-        DIRLOG=$log_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRLOG=$log_aux
     fi
    
 read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
     if [ ! -z "$nok_aux" ]
     then
-        DIRNOK=$nok_aux #<<< REALIZAR MAS VALIDACIONES!
+        DIRNOK=$nok_aux
     fi
 
 while true
@@ -110,11 +105,34 @@ do
       echo "Intentelo nuevamente."
       continue
     else
-      DATASIZE=$datasize_aux #<<< REALIZAR MAS VALIDACIONES!
+      DATASIZE=$datasize_aux
       break
     fi
 done
 }
+
+
+#####################################################
+################ INICIO DEL PROGRAMA ################
+#####################################################
+
+
+echo "Iniciando instalación"
+
+GRUPO=$PWD'/Grupo08'
+DIRCONF='dirconf'
+ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
+
+#Nombres de directorios por defecto
+DIRBIN='bin'
+DIRMAE='mae'
+DIRREC='nov'
+DIROK='ok'
+DIRPROC='imp'
+DIRINFO='rep'
+DIRLOG='log'
+DIRNOK='nok'
+
 
 #Detecto sistema ya instalado
 if [ -f $ARCHCONF ]
@@ -138,6 +156,8 @@ do
 		case $continuar_instalacion in
 			Si )
 				echo "Creando Estructuras de directorio. . ."
+                
+                mkdir $GRUPO
 				mkdir $GRUPO/$DIRCONF
 				mkdir $GRUPO/$DIRBIN
 				mkdir $GRUPO/$DIRMAE
@@ -171,17 +191,17 @@ do
 				echo "Instalando Archivos Maestros y Tablas"
 				cp __mae/* $GRUPO/$DIRMAE
 				instalacionFinalizada=true
-		                break;;
-		        No)
+		        break;;
+		    No)
 				((cantidadIntentos++))
 				if [ $cantidadIntentos -ne $intentosPermitidos ]
 				then
-			                #Volver a pedir nombres de directorios
+			        #Volver a pedir nombres de directorios
 					setearDirectorios
 				else
 					instalacionFinalizada=true
 				fi
-		                break;;
+		            break;;
 		        * ) echo "Ingrese una opción válida.";;
 		esac
 	done
