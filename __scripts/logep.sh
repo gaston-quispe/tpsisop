@@ -18,17 +18,51 @@
 #	0) logueo
 #	1) logueo y mostrar
 
-archivo=$GRUPO/$DIRLOG/$1.log
 
-if [ ! -f $achivo ]
-then
+
+# recibe por parameto $1 el archivo log original
+# mantiene en el log las ultimas m lineas cuando es excedido
+function podarLog {
+
+	cantLineasAconservar=10;
+	cabecera="<<Log Excedido..>>"
+	
+	archivoTemp=$GRUPO/$DIRLOG/logTemporal.txt
+	
 	touch $archivo
-fi
 
-echo  "$2  -  $3" >> $archivo
+	echo $cabecera >> $archivoTemp
+	cat "$1" | tail -"$cantLineasAconservar" >> "$archivoTemp"
+	cat "$archivoTemp" > "$1"
+	rm "$archivoTemp"
+}
 
-if [ $4 == 1 ]
-then
-	echo $2
-fi
 
+function main {
+
+	archivo=$GRUPO/$DIRLOG/$1.log
+	cantLineasPermitidas=12
+
+	if [ ! -f $achivo ]; then
+
+		touch $archivo
+	fi
+
+	echo  "$2  -  $3" >> $archivo
+
+	
+	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
+
+	if [ $cantLineasArchivo -gt $cantLineasPermitidas ]; then
+		
+		podarLog $archivo
+	fi
+
+
+	if [ $4 == 1 ]; then
+		echo $2
+	fi
+
+}
+
+main "$1" "$2" "$3" "$4"
