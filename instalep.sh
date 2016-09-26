@@ -15,21 +15,23 @@
 #####################################################
 
 function listarDirectorios {
-	$ARCHLOGGER "instalep" "Listando directorios" "INFO" "0" "$GRUPO/$DIRCONF"
 	$ARCHLOGGER "instalep" ">Directorio de Configuración: $GRUPO/$DIRCONF" "INFO" "1" "$GRUPO/$DIRCONF"
-    if [ -f $GRUPO/$DIRCONF ]
+    if [ -f $ARCHCONF ]
     then
-       ls -1 $GRUPO/$DIRCONF
+       ls -l $GRUPO/$DIRCONF
+       echo
     fi
 	$ARCHLOGGER "instalep" ">Directorio de Ejecutables: $GRUPO/$DIRBIN" "INFO" "1" "$GRUPO/$DIRCONF"
-    if [ -f $GRUPO/$DIRBIN ]
+    if [ -f $ARCHCONF ]
     then
-        ls -1 $GRUPO/$DIRBIN
+        ls -l $GRUPO/$DIRBIN
+        echo
     fi
 	$ARCHLOGGER "instalep" ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE" "INFO" "1" "$GRUPO/$DIRCONF"
-    if [ -f $GRUPO/$DIRMAE ]
+    if [ -f $ARCHCONF ]
     then
-    	ls -1 $GRUPO/$DIRMAE
+    	ls -l $GRUPO/$DIRMAE
+        echo
     fi
 	$ARCHLOGGER "instalep" ">Directorio de Recepción de Novedades: $GRUPO/$DIRREC" "INFO" "1" "$GRUPO/$DIRCONF"
 	$ARCHLOGGER "instalep" ">Directorio de Archivos Aceptados: $GRUPO/$DIROK" "INFO" "1" "$GRUPO/$DIRCONF"
@@ -37,87 +39,91 @@ function listarDirectorios {
 	$ARCHLOGGER "instalep" ">Directorio de Archivos de Reportes: $GRUPO/$DIRINFO" "INFO" "1" "$GRUPO/$DIRCONF"
 	$ARCHLOGGER "instalep" ">Directorio de Archivos de Log: $GRUPO/$DIRLOG" "INFO" "1" "$GRUPO/$DIRCONF"
 	$ARCHLOGGER "instalep" ">Directorio de Archivos Rechazados: $GRUPO/$DIRNOK" "INFO" "1" "$GRUPO/$DIRCONF"
-	$ARCHLOGGER "instalep" ">Estado de la instalación: LISTA" "INFO" "1" "$GRUPO/$DIRCONF"
+}
+
+function cargarDirectorios {
+    DIRBIN=$(grep "DIRBIN" "$ARCHCONF"|cut -d'=' -f2)
+    DIRMAE=$(grep "DIRMAE" "$ARCHCONF"|cut -d'=' -f2)
+    DIRREC=$(grep "DIRREC" "$ARCHCONF"|cut -d'=' -f2)
+    DIROK=$(grep "DIROK" "$ARCHCONF"|cut -d'=' -f2)
+    DIRPROC=$(grep "DIRPROC" "$ARCHCONF"|cut -d'=' -f2)
+    DIRINFO=$(grep "DIRINFO" "$ARCHCONF"|cut -d'=' -f2)
+    DIRLOG=$(grep "DIRLOG" "$ARCHCONF"|cut -d'=' -f2)
+    DIRNOK=$(grep "DIRNOK" "$ARCHCONF"|cut -d'=' -f2)
+}
+
+function setearUnDirectorio {
+    # $1 : mensaje a mostrar
+    # $2 : directorio por defecto
+    # $3 : variable donde guardar el directorio leido
+    
+    while true
+    do
+        read -p ">$1 ($2):" dir_aux
+        if [ -z "$dir_aux" ]
+        then
+            break
+        else
+            if [ "$dir_aux" != "$DIRCONF" ]
+            then
+             	eval "$3='$dir_aux'"
+                break
+            else
+		$ARCHLOGGER "instalep" "El nombre que intenta elegir se encuentra reservado. Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+            fi
+        fi
+    done
 }
 
 function setearDirectorios {
-read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
-    if [ ! -z "$dirbin_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de ejecutables: $GRUPO/$dirbin_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-     	DIRBIN=$dirbin_aux
-    fi
-    
-read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
-    if [ ! -z "$mae_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de Maestros y Tablas: $GRUPO/$mae_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRMAE=$mae_aux
-    fi
 
-read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
-    if [ ! -z "$nov_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de recepción de novedades $GRUPO/$nov_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRREC=$nov_aux
-    fi
-    
-read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
-    if [ ! -z "$ok_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de Archivos Aceptados: $GRUPO/$ok_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIROK=$ok_aux
-    fi
-    
-read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
-    if [ ! -z "$imp_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de Archivos Procesados: $GRUPO/$imp_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRPROC=$imp_aux
-    fi
-    
-read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
-    if [ ! -z "$rep_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de Reportes: $GRUPO/$rep_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRINFO=$rep_aux
-    fi
-    
-read -p "Defina el directorio de log ($GRUPO/log):" log_aux
-    if [ ! -z "$log_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de log: $GRUPO/$log_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRLOG=$log_aux
-    fi
-   
-read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
-    if [ ! -z "$nok_aux" ]
-    then
-	$ARCHLOGGER "instalep" "Definido directorio de rechazados: $GRUPO/$nok_aux" "INFO" "0" "$GRUPO/$DIRCONF"
-        DIRNOK=$nok_aux
-    fi
+    setearUnDirectorio "Defina el directorio de Ejecutables" "$GRUPO/$DIRBIN" DIRBIN
+    setearUnDirectorio "Defina el directorio de Maestros y Tablas" "$GRUPO/$DIRMAE" DIRMAE
+    setearUnDirectorio "Defina el directorio de Recepción de Novedades" "$GRUPO/$DIRREC" DIRREC
+    setearUnDirectorio "Defina el directorio de Archivos Aceptados" "$GRUPO/$DIROK" DIROK
+    setearUnDirectorio "Defina el directorio de Archivos Procesados" "$GRUPO/$DIRPROC" DIRPROC
+    setearUnDirectorio "Defina el directorio de Reportes" "$GRUPO/$DIRINFO" DIRINFO
+    setearUnDirectorio "Defina el directorio de Log" "$GRUPO/$DIRLOG" DIRLOG
+    setearUnDirectorio "Defina el directorio de Rechazados" "$GRUPO/$DIRNOK" DIRNOK
 
-while true
-do
-  read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
-    if [ -z "$datasize_aux" ]
-    then
-      datasize_aux=100
-    fi
+    while true
+    do
+        while true
+        do
+            read -p ">Defina el espacio mínimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
+            if [ -z "$datasize_aux" ]
+            then
+                datasize_aux=100
+                break
+            else
+                regex='^[0-9]+$'
+                if [[ "$datasize_aux" =~ $regex ]]
+                then
+                    if [ "$datasize_aux" -eq 0 ]
+                    then
+			$ARCHLOGGER "instalep" "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+                    else
+                        break
+                    fi
+                else
+			$ARCHLOGGER "instalep" "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+                fi
+            fi
+        done
 
-    espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
-    if [ $datasize_aux -gt $espacioDisponible ]
-    then
-	$ARCHLOGGER "instalep" "Insuficiente espacio en disco." "ERR" "1" "$GRUPO/$DIRCONF"
-	$ARCHLOGGER "instalep" "Espacio disponible: $espacioDisponible Mb." "INFO" "1" "$GRUPO/$DIRCONF"
-	$ARCHLOGGER "instalep" "Espacio requerido: $datasize_aux Mb." "INFO" "1" "$GRUPO/$DIRCONF"
-      echo "Intentelo nuevamente."
-      continue
-    else
-      DATASIZE=$datasize_aux
-      break
-    fi
-done
+        espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
+        if [ $datasize_aux -gt $espacioDisponible ]
+        then
+		$ARCHLOGGER "instalep" "Insuficiente espacio en disco." "ERR" "1" "$GRUPO/$DIRCONF"
+		$ARCHLOGGER "instalep" "Espacio disponible: $espacioDisponible Mb." "ERR" "1" "$GRUPO/$DIRCONF"
+		$ARCHLOGGER "instalep" "Espacio requerido: $datasize_aux Mb." "ERR" "1" "$GRUPO/$DIRCONF"
+		$ARCHLOGGER "instalep" "Intentelo nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+          continue
+        else
+          DATASIZE=$datasize_aux
+          break
+        fi
+    done
 }
 
 function inicializarLogger {
@@ -141,30 +147,27 @@ function fecha {
 ################ INICIO DEL PROGRAMA ################
 #####################################################
 
-
-echo "Iniciando instalación"
-
-GRUPO=$PWD'/Grupo08'
-DIRCONF='dirconf'
+GRUPO=$PWD/Grupo08
+DIRCONF=dirconf
 ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
 
 #Nombres de directorios por defecto
-DIRBIN='bin'
-DIRMAE='mae'
-DIRREC='nov'
-DIROK='ok'
-DIRPROC='imp'
-DIRINFO='rep'
-DIRLOG='log'
-DIRNOK='nok'
+DIRBIN=bin
+DIRMAE=mae
+DIRREC=nov
+DIROK=ok
+DIRPROC=imp
+DIRINFO=rep
+DIRLOG=log
+DIRNOK=nok
 
 if ! inicializarLogger; then
 	echo "Error inicializando logger";
 	exit 0
 fi
 
-mkdir $GRUPO
-mkdir $GRUPO/$DIRCONF
+#Creo directorio de configuracion
+mkdir -p $GRUPO/$DIRCONF
 ARCHLOGGER=__scripts/logep.sh
 
 $ARCHLOGGER "instalep" "Inicio del proceso" "INFO" "0" "$GRUPO/$DIRCONF"
@@ -172,42 +175,47 @@ $ARCHLOGGER "instalep" "Inicio del proceso" "INFO" "0" "$GRUPO/$DIRCONF"
 #Detecto sistema ya instalado
 if [ -f $ARCHCONF ]
 then
+    cargarDirectorios
+    echo "******************************************************"
+    echo "*   *  * * EL SISTEMA EPLAM YA SE ENCUENTRA * *  *   *"
+    echo "*   *  * * * * * * *INSTALADO!!!!* * * * *  * *  *   *"
+    echo "******************************************************"
 	listarDirectorios
 	exit 0
 else
+    echo "******************************************************"
+    echo "*   *  * *   INSTALACIÓN DEL SISTEMA EPLAM  * *  *   *"
+    echo "******************************************************"
+    echo "Iniciando instalación. . ."
 	setearDirectorios
 fi
 
 clear
+
 listarDirectorios
+echo ">Estado de la instalación: LISTA"
 
 cantidadIntentos=0
 intentosPermitidos=2
 instalacionFinalizada=false
 while [ $cantidadIntentos -ne $intentosPermitidos ] && [ $instalacionFinalizada = false ]
 do
-	echo "Desea continuar con la instalación? (Si – No):"
+	echo ">Desea continuar con la instalación? (Si – No):"
 	select continuar_instalacion in "Si" "No"; do
 		case $continuar_instalacion in
 			Si )
 				$ARCHLOGGER "instalep" "Continuando con instalación" "INFO" "1" "$GRUPO/$DIRCONF"
 				$ARCHLOGGER "instalep" "Creando Estructuras de directorio. . ." "INFO" "0" "$GRUPO/$DIRCONF"
                 
-				mkdir $GRUPO/$DIRBIN
-				mkdir $GRUPO/$DIRMAE
-				mkdir $GRUPO/$DIRREC
-				mkdir $GRUPO/$DIROK
-				mkdir $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
-				mkdir $GRUPO/$DIRINFO
-				mkdir $GRUPO/$DIRLOG
-				mkdir $GRUPO/$DIRNOK
-					
-				#Escritura de archivo instalep.conf
-				if [ -f $ARCHCONF ]
-				then
-	    				rm $ARCHCONF
-				fi
-				touch $ARCHCONF
+                mkdir -p $GRUPO
+				mkdir -p $GRUPO/$DIRBIN
+				mkdir -p $GRUPO/$DIRMAE
+				mkdir -p $GRUPO/$DIRREC
+				mkdir -p $GRUPO/$DIROK
+				mkdir -p $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
+				mkdir -p $GRUPO/$DIRINFO
+				mkdir -p $GRUPO/$DIRLOG
+				mkdir -p $GRUPO/$DIRNOK
 
 				echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
@@ -219,13 +227,13 @@ do
 				echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
-				$ARCHLOGGER "instalep" "Instalando Programas y Funciones" "INFO" "0" "$GRUPO/$DIRCONF"
 				cp __scripts/* $GRUPO/$DIRBIN
+                chmod +x $GRUPO/$DIRBIN/*.sh 
 
-				$ARCHLOGGER "instalep" "Instalando Archivos Maestros y Tablas" "INFO" "0" "$GRUPO/$DIRCONF"
 				cp __mae/* $GRUPO/$DIRMAE
-				instalacionFinalizada=true
-		        break;;
+			
+                instalacionFinalizada=true
+                break;;
 		    No)
 				((cantidadIntentos++))
 				if [ $cantidadIntentos -ne $intentosPermitidos ]
@@ -236,7 +244,7 @@ do
 					instalacionFinalizada=true
 				fi
 		            break;;
-		        * ) echo "Ingrese una opción válida.";;
+		    * ) echo "Ingrese una opción válida.";;
 		esac
 	done
 done

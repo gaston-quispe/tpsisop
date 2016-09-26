@@ -25,7 +25,7 @@
 # mantiene en el log las ultimas m lineas cuando es excedido
 function podarLog {
 
-	cantLineasAconservar=10;
+	cantLineasAconservar=50;
 	cabecera="<<Log Excedido..>>"
 	
 	archivoTemp=$path/logTemporal.txt
@@ -41,6 +41,20 @@ function podarLog {
 function timestamp {
 	date "+%d/%m/%y %H:%M:%S"
 }
+
+
+#valida si el archivo log supera el tamanio permitido
+#$1 es el archivo
+function validarTamanioLog {
+
+	#valida que no supere 2K de datos
+	if [ $(stat -c%s "$1") -gt 2000  ];then
+		return 1		
+	fi
+	return 0
+}
+
+
 
 function main {
 	if [ ! $5 == "" ]; then
@@ -58,13 +72,11 @@ function main {
 	fi
 
 	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
-
-	tamanioArchivo=$(stat -c%s "$archivo")	
-
-	if [ $tamanioArchivo -gt $capacidadMaximaLog ]; then		
+	
+	tamanioValido=$( validarTamanioLog $archivo )
+	if [ ! tamanioValido ]; then
 		podarLog $archivo $path
 	fi
-
 
 	if [ $4 == 1 ]; then
 		echo $2
