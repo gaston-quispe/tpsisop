@@ -51,7 +51,7 @@ function main {
 
 	archivo=$path/$1.log
 
-	cantLineasPermitidas=12
+	capacidadMaximaLog=1000 #bytes	
 
 	if [ ! -f $achivo ]; then
 		touch $archivo
@@ -59,10 +59,9 @@ function main {
 
 	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
 
-	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
+	tamanioArchivo=$(stat -c%s "$archivo")	
 
-	if [ $cantLineasArchivo -gt $cantLineasPermitidas ]; then
-		
+	if [ $tamanioArchivo -gt $capacidadMaximaLog ]; then		
 		podarLog $archivo $path
 	fi
 
