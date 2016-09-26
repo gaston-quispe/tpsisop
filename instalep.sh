@@ -155,9 +155,11 @@ DIRINFO=rep
 DIRLOG=log
 DIRNOK=nok
 
-#Creo archivo para log
+#Creo directorio de configuracion
 mkdir -p $GRUPO/$DIRCONF
-touch $ARCHLOG
+
+#Creo archivo para log
+#touch $ARCHLOG
 
 #Detecto sistema ya instalado
 if [ -f $ARCHCONF ]
@@ -232,7 +234,7 @@ do
 					instalacionFinalizada=true
 				fi
 		            break;;
-		        * ) echo "Ingrese una opción válida.";;
+		    * ) echo "Ingrese una opción válida.";;
 		esac
 	done
 done
