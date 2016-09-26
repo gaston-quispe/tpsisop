@@ -48,7 +48,6 @@ function validarTamanioLog {
 
 	#valida que no supere 2K de datos
 	if [ $(stat -c%s "$1") -gt 2000  ];then
-		echo "entra a podar cunado el valor es"
 		podarLog "$1"
 	fi
 }
