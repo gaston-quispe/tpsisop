@@ -57,8 +57,31 @@ function validarTamanioLog {
 
 
 function main {
-	if [ ! $5 == "" ]; then
-		path=$5		
+
+
+	#el argumento 3 es opcional por lo tanto si no se pasa por parametro se usa INFO por default
+        if [[  "$3" != "WAR" && "$3" != "ERR" && "$3" != "INFO" ]]; then
+                tipoMensaje="INFO"
+
+                if [ -n "$5"  ]; then   #existe el parametro tipo mensaje $3 pero escribio mal el tipo mensaje se pone un WAR
+			tipoMensaje="WAR"
+                        argumentoMostrarMensaje=$4
+                        argumentoDirectorio=$5
+                else
+                        argumentoMostrarMensaje=$3  #no existe el paramtro $3
+                        argumentoDirectorio=$4
+                fi
+        else
+                tipoMensaje=$3
+                argumentoMostrarMensaje=$4
+                argumentoDirectorio=$5
+        fi
+
+
+
+
+	if [[ ! "$argumentoDirectorio" == "" && -d "$argumentoDirectorio" ]]; then
+		path=$argumentoDirectorio		
 	else
 		path=$GRUPO/$DIRLOG
 	fi
@@ -71,14 +94,14 @@ function main {
 		touch $archivo
 	fi
 
-	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
+	echo "$USER - $(timestamp) : $2  -  $tipoMensaje" >> $archivo
 	
 	tamanioValido=$( validarTamanioLog $archivo )
 	if [ ! tamanioValido ]; then
 		podarLog $archivo $path
 	fi
 
-	if [ $4 == 1 ]; then
+	if [ $argumentoMostrarMensaje == 1 ]; then
 		echo $2
 	fi
 
