@@ -52,88 +52,78 @@ function cargarDirectorios {
     DIRNOK=$(grep "DIRNOK" "$ARCHCONF"|cut -d'=' -f2)
 }
 
-function setearDirectorios {
-read -p "Defina el directorio de ejecutables ($GRUPO/$DIRBIN):" dirbin_aux
-    if [ ! -z "$dirbin_aux" ]
-    then
-     	DIRBIN=$dirbin_aux
-    fi
+function setearUnDirectorio {
+    # $1 : mensaje a mostrar
+    # $2 : directorio por defecto
+    # $3 : variable donde guardar el directorio leido
     
-read -p "Defina el directorio de Maestros y Tablas ($GRUPO/$DIRMAE):" mae_aux
-    if [ ! -z "$mae_aux" ]
-    then
-        DIRMAE=$mae_aux
-    fi
-
-read -p "Defina el directorio de recepción de novedades ($GRUPO/$DIRREC):" nov_aux
-    if [ ! -z "$nov_aux" ]
-    then
-        DIRREC=$nov_aux
-    fi
-    
-read -p "Defina el directorio de Archivos Aceptados ($GRUPO/$DIROK):" ok_aux
-    if [ ! -z "$ok_aux" ]
-    then
-        DIROK=$ok_aux
-    fi
-    
-read -p "Defina el directorio de Archivos Procesados ($GRUPO/$DIRPROC):" imp_aux
-    if [ ! -z "$imp_aux" ]
-    then
-        DIRPROC=$imp_aux
-    fi
-    
-read -p "Defina el directorio de Reportes ($GRUPO/$DIRINFO):" rep_aux
-    if [ ! -z "$rep_aux" ]
-    then
-        DIRINFO=$rep_aux
-    fi
-    
-read -p "Defina el directorio de log ($GRUPO/$DIRLOG):" log_aux
-    if [ ! -z "$log_aux" ]
-    then
-        DIRLOG=$log_aux
-    fi
-   
-read -p "Defina el directorio de rechazados ($GRUPO/$DIRNOK):" nok_aux
-    if [ ! -z "$nok_aux" ]
-    then
-        DIRNOK=$nok_aux
-    fi
-
-while true
-do
     while true
     do
-        read -p "Defina el espacio mínimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
-        if [ -z "$datasize_aux" ]
+        read -p ">$1 ($2):" dir_aux
+        if [ -z "$dir_aux" ]
         then
-            datasize_aux=100
             break
         else
-            regex='^[0-9]+$'
-            if [[ "$datasize_aux" =~ $regex ]]
+            if [ "$dir_aux" != "$DIRCONF" ]
             then
-               break
+             	eval "$3='$dir_aux'"
+                break
             else
-               echo "El espacio mínimo debe ser un numero entero! Reintente."
+                echo "El nombre que intenta elegir se encuentra reservado. Intente nuevamente."
             fi
         fi
     done
+}
 
-    espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
-    if [ $datasize_aux -gt $espacioDisponible ]
-    then
-      echo "Insuficiente espacio en disco."
-      echo "Espacio disponible:" $espacioDisponible "Mb."
-      echo "Espacio requerido:" $datasize_aux "Mb."
-      echo "Intentelo nuevamente."
-      continue
-    else
-      DATASIZE=$datasize_aux
-      break
-    fi
-done
+function setearDirectorios {
+
+    setearUnDirectorio "Defina el directorio de Ejecutables" "$GRUPO/$DIRBIN" DIRBIN
+    setearUnDirectorio "Defina el directorio de Maestros y Tablas" "$GRUPO/$DIRMAE" DIRMAE
+    setearUnDirectorio "Defina el directorio de Recepción de Novedades" "$GRUPO/$DIRREC" DIRREC
+    setearUnDirectorio "Defina el directorio de Archivos Aceptados" "$GRUPO/$DIROK" DIROK
+    setearUnDirectorio "Defina el directorio de Archivos Procesados" "$GRUPO/$DIRPROC" DIRPROC
+    setearUnDirectorio "Defina el directorio de Reportes" "$GRUPO/$DIRINFO" DIRINFO
+    setearUnDirectorio "Defina el directorio de Log" "$GRUPO/$DIRLOG" DIRLOG
+    setearUnDirectorio "Defina el directorio de Rechazados" "$GRUPO/$DIRNOK" DIRNOK
+
+    while true
+    do
+        while true
+        do
+            read -p ">Defina el espacio mínimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
+            if [ -z "$datasize_aux" ]
+            then
+                datasize_aux=100
+                break
+            else
+                regex='^[0-9]+$'
+                if [[ "$datasize_aux" =~ $regex ]]
+                then
+                    if [ "$datasize_aux" -eq 0 ]
+                    then
+                        echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
+                    else
+                        break
+                    fi
+                else
+                   echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
+                fi
+            fi
+        done
+
+        espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
+        if [ $datasize_aux -gt $espacioDisponible ]
+        then
+          echo "Insuficiente espacio en disco."
+          echo "Espacio disponible:" $espacioDisponible "Mb."
+          echo "Espacio requerido:" $datasize_aux "Mb."
+          echo "Intentelo nuevamente."
+          continue
+        else
+          DATASIZE=$datasize_aux
+          break
+        fi
+    done
 }
 
 #####################################################
@@ -165,13 +155,16 @@ mkdir -p $GRUPO/$DIRCONF
 if [ -f $ARCHCONF ]
 then
     cargarDirectorios
-    echo "*****************************************************"
-    echo "*   *  *  * LA APLICACIÓN YA SE ENCUENTRA *  *  *   *"
-    echo "*   *  *  * * * * * *INSTALADA!!!!* * * * *  *  *   *"
-    echo "*****************************************************"
+    echo "******************************************************"
+    echo "*   *  * * EL SISTEMA EPLAM YA SE ENCUENTRA * *  *   *"
+    echo "*   *  * * * * * * *INSTALADo!!!!* * * * *  * *  *   *"
+    echo "******************************************************"
 	listarDirectorios
 	exit 0
 else
+    echo "******************************************************"
+    echo "*   *  * *   INSTALACIÓN DEL SISTEMA EPLAM  * *  *   *"
+    echo "******************************************************"
     echo "Iniciando instalación. . ."
 	setearDirectorios
 fi
@@ -186,7 +179,7 @@ intentosPermitidos=2
 instalacionFinalizada=false
 while [ $cantidadIntentos -ne $intentosPermitidos ] && [ $instalacionFinalizada = false ]
 do
-	echo "Desea continuar con la instalación? (Si – No):"
+	echo ">Desea continuar con la instalación? (Si – No):"
 	select continuar_instalacion in "Si" "No"; do
 		case $continuar_instalacion in
 			Si )
