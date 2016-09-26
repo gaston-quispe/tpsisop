@@ -16,19 +16,22 @@
 
 function listarDirectorios {
     echo ">Directorio de Configuración: $GRUPO/$DIRCONF"
-    if [ -f $GRUPO/$DIRCONF ]
+    if [ -f $ARCHCONF ]
     then
-       ls -1 $GRUPO/$DIRCONF
+       ls -l $GRUPO/$DIRCONF
+       echo
     fi
     echo ">Directorio de Ejecutables: $GRUPO/$DIRBIN"
-    if [ -f $GRUPO/$DIRBIN ]
+    if [ -f $ARCHCONF ]
     then
-        ls -1 $GRUPO/$DIRBIN
+        ls -l $GRUPO/$DIRBIN
+        echo
     fi
     echo ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
-    if [ -f $GRUPO/$DIRMAE ]
+    if [ -f $ARCHCONF ]
     then
-    	ls -1 $GRUPO/$DIRMAE
+    	ls -l $GRUPO/$DIRMAE
+        echo
     fi
     echo ">Directorio de Recepción de Novedades: $GRUPO/$DIRREC"
     echo ">Directorio de Archivos Aceptados: $GRUPO/$DIROK"
@@ -36,53 +39,63 @@ function listarDirectorios {
     echo ">Directorio de Archivos de Reportes: $GRUPO/$DIRINFO"
     echo ">Directorio de Archivos de Log: $GRUPO/$DIRLOG"
     echo ">Directorio de Archivos Rechazados: $GRUPO/$DIRNOK"
-    echo ">Estado de la instalación: LISTA"
+}
+
+function cargarDirectorios {
+    DIRBIN=$(grep "DIRBIN" "$ARCHCONF"|cut -d'=' -f2)
+    DIRMAE=$(grep "DIRMAE" "$ARCHCONF"|cut -d'=' -f2)
+    DIRREC=$(grep "DIRREC" "$ARCHCONF"|cut -d'=' -f2)
+    DIROK=$(grep "DIROK" "$ARCHCONF"|cut -d'=' -f2)
+    DIRPROC=$(grep "DIRPROC" "$ARCHCONF"|cut -d'=' -f2)
+    DIRINFO=$(grep "DIRINFO" "$ARCHCONF"|cut -d'=' -f2)
+    DIRLOG=$(grep "DIRLOG" "$ARCHCONF"|cut -d'=' -f2)
+    DIRNOK=$(grep "DIRNOK" "$ARCHCONF"|cut -d'=' -f2)
 }
 
 function setearDirectorios {
-read -p "Defina el directorio de ejecutables ($GRUPO/bin):" dirbin_aux
+read -p "Defina el directorio de ejecutables ($GRUPO/$DIRBIN):" dirbin_aux
     if [ ! -z "$dirbin_aux" ]
     then
      	DIRBIN=$dirbin_aux
     fi
     
-read -p "Defina el directorio de Maestros y Tablas ($GRUPO/mae):" mae_aux
+read -p "Defina el directorio de Maestros y Tablas ($GRUPO/$DIRMAE):" mae_aux
     if [ ! -z "$mae_aux" ]
     then
         DIRMAE=$mae_aux
     fi
 
-read -p "Defina el directorio de recepción de novedades ($GRUPO/nov):" nov_aux
+read -p "Defina el directorio de recepción de novedades ($GRUPO/$DIRREC):" nov_aux
     if [ ! -z "$nov_aux" ]
     then
         DIRREC=$nov_aux
     fi
     
-read -p "Defina el directorio de Archivos Aceptados ($GRUPO/ok):" ok_aux
+read -p "Defina el directorio de Archivos Aceptados ($GRUPO/$DIROK):" ok_aux
     if [ ! -z "$ok_aux" ]
     then
         DIROK=$ok_aux
     fi
     
-read -p "Defina el directorio de Archivos Procesados ($GRUPO/imp):" imp_aux
+read -p "Defina el directorio de Archivos Procesados ($GRUPO/$DIRPROC):" imp_aux
     if [ ! -z "$imp_aux" ]
     then
         DIRPROC=$imp_aux
     fi
     
-read -p "Defina el directorio de Reportes ($GRUPO/rep):" rep_aux
+read -p "Defina el directorio de Reportes ($GRUPO/$DIRINFO):" rep_aux
     if [ ! -z "$rep_aux" ]
     then
         DIRINFO=$rep_aux
     fi
     
-read -p "Defina el directorio de log ($GRUPO/log):" log_aux
+read -p "Defina el directorio de log ($GRUPO/$DIRLOG):" log_aux
     if [ ! -z "$log_aux" ]
     then
         DIRLOG=$log_aux
     fi
    
-read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
+read -p "Defina el directorio de rechazados ($GRUPO/$DIRNOK):" nok_aux
     if [ ! -z "$nok_aux" ]
     then
         DIRNOK=$nok_aux
@@ -90,11 +103,23 @@ read -p "Defina el directorio de rechazados ($GRUPO/nok):" nok_aux
 
 while true
 do
-  read -p "Defina el espacio minimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
-    if [ -z "$datasize_aux" ]
-    then
-      datasize_aux=100
-    fi
+    while true
+    do
+        read -p "Defina el espacio mínimo libre para la recepción de archivos en Mbytes(100):" datasize_aux
+        if [ -z "$datasize_aux" ]
+        then
+            datasize_aux=100
+            break
+        else
+            regex='^[0-9]+$'
+            if [[ "$datasize_aux" =~ $regex ]]
+            then
+               break
+            else
+               echo "El espacio mínimo debe ser un numero entero! Reintente."
+            fi
+        fi
+    done
 
     espacioDisponible=$(df -k . | sed 1d | awk '{OFMT = "%.0f"; print $4/1024}')
     if [ $datasize_aux -gt $espacioDisponible ]
@@ -111,40 +136,48 @@ do
 done
 }
 
-
 #####################################################
 ################ INICIO DEL PROGRAMA ################
 #####################################################
 
-
-echo "Iniciando instalación"
-
-GRUPO=$PWD'/Grupo08'
-DIRCONF='dirconf'
+GRUPO=$PWD/Grupo08
+DIRCONF=dirconf
 ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
+ARCHLOG=$GRUPO/$DIRCONF/instalep.log
 
 #Nombres de directorios por defecto
-DIRBIN='bin'
-DIRMAE='mae'
-DIRREC='nov'
-DIROK='ok'
-DIRPROC='imp'
-DIRINFO='rep'
-DIRLOG='log'
-DIRNOK='nok'
+DIRBIN=bin
+DIRMAE=mae
+DIRREC=nov
+DIROK=ok
+DIRPROC=imp
+DIRINFO=rep
+DIRLOG=log
+DIRNOK=nok
 
+#Creo archivo para log
+mkdir -p $GRUPO/$DIRCONF
+touch $ARCHLOG
 
 #Detecto sistema ya instalado
 if [ -f $ARCHCONF ]
 then
+    cargarDirectorios
+    echo "*****************************************************"
+    echo "*   *  *  * LA APLICACIÓN YA SE ENCUENTRA *  *  *   *"
+    echo "*   *  *  * * * * * *INSTALADA!!!!* * * * *  *  *   *"
+    echo "*****************************************************"
 	listarDirectorios
 	exit 0
 else
+    echo "Iniciando instalación. . ."
 	setearDirectorios
 fi
 
 clear
+
 listarDirectorios
+echo ">Estado de la instalación: LISTA"
 
 cantidadIntentos=0
 intentosPermitidos=2
@@ -157,22 +190,17 @@ do
 			Si )
 				echo "Creando Estructuras de directorio. . ."
                 
-                mkdir $GRUPO
-				mkdir $GRUPO/$DIRCONF
-				mkdir $GRUPO/$DIRBIN
-				mkdir $GRUPO/$DIRMAE
-				mkdir $GRUPO/$DIRREC
-				mkdir $GRUPO/$DIROK
-				mkdir $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
-				mkdir $GRUPO/$DIRINFO
-				mkdir $GRUPO/$DIRLOG
-				mkdir $GRUPO/$DIRNOK
+                mkdir -p $GRUPO
+				mkdir -p $GRUPO/$DIRBIN
+				mkdir -p $GRUPO/$DIRMAE
+				mkdir -p $GRUPO/$DIRREC
+				mkdir -p $GRUPO/$DIROK
+				mkdir -p $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
+				mkdir -p $GRUPO/$DIRINFO
+				mkdir -p $GRUPO/$DIRLOG
+				mkdir -p $GRUPO/$DIRNOK
 					
 				#Escritura de archivo instalep.conf
-				if [ -f $ARCHCONF ]
-				then
-	    				rm $ARCHCONF
-				fi
 				touch $ARCHCONF
 
 				echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
@@ -190,8 +218,9 @@ do
 
 				echo "Instalando Archivos Maestros y Tablas"
 				cp __mae/* $GRUPO/$DIRMAE
-				instalacionFinalizada=true
-		        break;;
+			
+                instalacionFinalizada=true
+                break;;
 		    No)
 				((cantidadIntentos++))
 				if [ $cantidadIntentos -ne $intentosPermitidos ]
