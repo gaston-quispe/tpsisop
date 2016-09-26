@@ -37,6 +37,9 @@ function podarLog {
 	rm "$archivoTemp"
 }
 
+function timestamp {
+	date "+%d/%m/%y %H:%M:%S"
+}
 
 function main {
 
@@ -48,8 +51,7 @@ function main {
 		touch $archivo
 	fi
 
-	fecha=date
-	echo "$USER - $fecha : $2  -  $3" >> $archivo
+	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
 
 	
 	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
