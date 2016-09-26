@@ -215,6 +215,7 @@ do
 
 				echo "Instalando Programas y Funciones"
 				cp __scripts/* $GRUPO/$DIRBIN
+                chmod +x $GRUPO/$DIRBIN/*.sh 
 
 				echo "Instalando Archivos Maestros y Tablas"
 				cp __mae/* $GRUPO/$DIRMAE

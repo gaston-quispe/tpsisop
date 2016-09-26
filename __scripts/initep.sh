@@ -34,7 +34,7 @@ function inicializarLogger {
                 instalacionExitosa=1
         fi
 
-	if [ $instalacionExitosa == 0 ]; then
+	if [ $instalacionExitosa -eq 0 ]; then
 		# Dar permisos de ejecucion
 		filename=$GRUPO/$DIRBIN/logep.sh
 
