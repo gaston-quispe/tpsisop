@@ -17,17 +17,18 @@
 # el parametro 4 depende de:
 #	0) logueo
 #	1) logueo y mostrar
-
+# el parametro 5 es el path destino del log
 
 
 # recibe por parameto $1 el archivo log original
+# recibe por parameto $2 el path destino del log
 # mantiene en el log las ultimas m lineas cuando es excedido
 function podarLog {
 
 	cantLineasAconservar=10;
 	cabecera="<<Log Excedido..>>"
 	
-	archivoTemp=$GRUPO/$DIRLOG/logTemporal.txt
+	archivoTemp=$path/logTemporal.txt
 	
 	touch $archivo
 
@@ -42,23 +43,27 @@ function timestamp {
 }
 
 function main {
+	if [ ! $5 == "" ]; then
+		path=$5		
+	else
+		path=$GRUPO/$DIRLOG
+	fi
 
-	archivo=$GRUPO/$DIRLOG/$1.log
+	archivo=$path/$1.log
+
 	cantLineasPermitidas=12
 
 	if [ ! -f $achivo ]; then
-
 		touch $archivo
 	fi
 
 	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
 
-	
 	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
 
 	if [ $cantLineasArchivo -gt $cantLineasPermitidas ]; then
 		
-		podarLog $archivo
+		podarLog $archivo $path
 	fi
 
 
@@ -68,4 +73,4 @@ function main {
 
 }
 
-main "$1" "$2" "$3" "$4"
+main "$1" "$2" "$3" "$4" "$5"
