@@ -18,19 +18,19 @@ function listarDirectorios {
 	$ARCHLOGGER "instalep" ">Directorio de Configuración: $GRUPO/$DIRCONF" "INFO" "1" "$GRUPO/$DIRCONF"
     if [ -f $ARCHCONF ]
     then
-       ls -l $GRUPO/$DIRCONF
+       ls -l "$GRUPO/$DIRCONF"
        echo
     fi
 	$ARCHLOGGER "instalep" ">Directorio de Ejecutables: $GRUPO/$DIRBIN" "INFO" "1" "$GRUPO/$DIRCONF"
     if [ -f $ARCHCONF ]
     then
-        ls -l $GRUPO/$DIRBIN
+        ls -l "$GRUPO/$DIRBIN"
         echo
     fi
-	$ARCHLOGGER "instalep" ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE" "INFO" "1" "$GRUPO/$DIRCONF"
+    echo ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
     if [ -f $ARCHCONF ]
     then
-    	ls -l $GRUPO/$DIRMAE
+    	ls -l "$GRUPO/$DIRMAE"
         echo
     fi
 	$ARCHLOGGER "instalep" ">Directorio de Recepción de Novedades: $GRUPO/$DIRREC" "INFO" "1" "$GRUPO/$DIRCONF"
@@ -97,16 +97,11 @@ function setearDirectorios {
                 break
             else
                 regex='^[0-9]+$'
-                if [[ "$datasize_aux" =~ $regex ]]
+                if [[ "$datasize_aux" =~ $regex ]] && [ "$datasize_aux" -gt 0 ]
                 then
-                    if [ "$datasize_aux" -eq 0 ]
-                    then
-			$ARCHLOGGER "instalep" "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
-                    else
-                        break
-                    fi
+                    break
                 else
-			$ARCHLOGGER "instalep" "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+                    echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
                 fi
             fi
         done
@@ -147,9 +142,9 @@ function fecha {
 ################ INICIO DEL PROGRAMA ################
 #####################################################
 
-GRUPO=$PWD/Grupo08
-DIRCONF=dirconf
-ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
+GRUPO="$PWD/Grupo08"
+DIRCONF="dirconf"
+ARCHCONF="$GRUPO/$DIRCONF/instalep.conf"
 
 #Nombres de directorios por defecto
 DIRBIN=bin
@@ -167,18 +162,18 @@ if ! inicializarLogger; then
 fi
 
 #Creo directorio de configuracion
-mkdir -p $GRUPO/$DIRCONF
+mkdir -p "$GRUPO/$DIRCONF"
 ARCHLOGGER=__scripts/logep.sh
 
 $ARCHLOGGER "instalep" "Inicio del proceso" "INFO" "0" "$GRUPO/$DIRCONF"
 
 #Detecto sistema ya instalado
-if [ -f $ARCHCONF ]
+if [ -f "$ARCHCONF" ]
 then
     cargarDirectorios
     echo "******************************************************"
     echo "*   *  * * EL SISTEMA EPLAM YA SE ENCUENTRA * *  *   *"
-    echo "*   *  * * * * * * *INSTALADO!!!!* * * * *  * *  *   *"
+    echo "*   *  * * * * * * * INSTALADO!!! * * * * * * *  *   *"
     echo "******************************************************"
 	listarDirectorios
 	exit 0
@@ -200,22 +195,24 @@ intentosPermitidos=2
 instalacionFinalizada=false
 while [ $cantidadIntentos -ne $intentosPermitidos ] && [ $instalacionFinalizada = false ]
 do
-	echo ">Desea continuar con la instalación? (Si – No):"
+    echo ">Desea continuar con la instalación? (Si – No):"
 	select continuar_instalacion in "Si" "No"; do
 		case $continuar_instalacion in
 			Si )
-				$ARCHLOGGER "instalep" "Continuando con instalación" "INFO" "1" "$GRUPO/$DIRCONF"
 				$ARCHLOGGER "instalep" "Creando Estructuras de directorio. . ." "INFO" "0" "$GRUPO/$DIRCONF"
                 
-                mkdir -p $GRUPO
-				mkdir -p $GRUPO/$DIRBIN
-				mkdir -p $GRUPO/$DIRMAE
-				mkdir -p $GRUPO/$DIRREC
-				mkdir -p $GRUPO/$DIROK
-				mkdir -p $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
-				mkdir -p $GRUPO/$DIRINFO
-				mkdir -p $GRUPO/$DIRLOG
-				mkdir -p $GRUPO/$DIRNOK
+                mkdir -p "$GRUPO"
+				mkdir -p "$GRUPO/$DIRBIN"
+				mkdir -p "$GRUPO/$DIRMAE"
+				mkdir -p "$GRUPO/$DIRREC"
+				mkdir -p "$GRUPO/$DIROK"
+				mkdir -p "$GRUPO/$DIRPROC" #ver porque en el tp tiene otro nombre
+				mkdir -p "$GRUPO/$DIRINFO"
+				mkdir -p "$GRUPO/$DIRLOG"
+				mkdir -p "$GRUPO/$DIRNOK"
+					
+				#Escritura de archivo instalep.conf
+				touch $ARCHCONF
 
 				echo GRUPO=$GRUPO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRBIN=$DIRBIN=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
@@ -227,10 +224,12 @@ do
 				echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
-				cp __scripts/* $GRUPO/$DIRBIN
-                chmod +x $GRUPO/$DIRBIN/*.sh 
+				echo "Instalando Programas y Funciones"
+				cp __scripts/* "$GRUPO/$DIRBIN"
+                chmod +x "$GRUPO/$DIRBIN"/*.sh 
 
-				cp __mae/* $GRUPO/$DIRMAE
+				echo "Instalando Archivos Maestros y Tablas"
+				cp __mae/* "$GRUPO/$DIRMAE"
 			
                 instalacionFinalizada=true
                 break;;
@@ -252,5 +251,3 @@ done
 $ARCHLOGGER "instalep" "Fin del proceso. Usuario: $USER" "INFO" "1" "$GRUPO/$DIRCONF"
 fechaAux=$(fecha)
 $ARCHLOGGER "instalep" "$fechaAux" "INFO" "1" "$GRUPO/$DIRCONF"
-
-
