@@ -37,6 +37,9 @@ function podarLog {
 	rm "$archivoTemp"
 }
 
+function timestamp {
+	date "+%d/%m/%y %H:%M:%S"
+}
 
 
 #valida si el archivo log supera el tamanio permitido
@@ -62,7 +65,7 @@ function main {
 		touch $archivo
 	fi
 
-	echo  "$2  -  $3" >> $archivo
+	echo "$USER - $(timestamp) : $2  -  $3" >> $archivo
 
 	
 	validarTamanioLog $archivo
