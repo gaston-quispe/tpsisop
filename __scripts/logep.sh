@@ -48,7 +48,8 @@ function main {
 		touch $archivo
 	fi
 
-	echo  "$2  -  $3" >> $archivo
+	fecha=date
+	echo "$USER - $fecha : $2  -  $3" >> $archivo
 
 	
 	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
