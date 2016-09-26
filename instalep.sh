@@ -18,19 +18,19 @@ function listarDirectorios {
     echo ">Directorio de Configuración: $GRUPO/$DIRCONF"
     if [ -f $ARCHCONF ]
     then
-       ls -l $GRUPO/$DIRCONF
+       ls -l "$GRUPO/$DIRCONF"
        echo
     fi
     echo ">Directorio de Ejecutables: $GRUPO/$DIRBIN"
     if [ -f $ARCHCONF ]
     then
-        ls -l $GRUPO/$DIRBIN
+        ls -l "$GRUPO/$DIRBIN"
         echo
     fi
     echo ">Directorio de Maestros y Tablas: $GRUPO/$DIRMAE"
     if [ -f $ARCHCONF ]
     then
-    	ls -l $GRUPO/$DIRMAE
+    	ls -l "$GRUPO/$DIRMAE"
         echo
     fi
     echo ">Directorio de Recepción de Novedades: $GRUPO/$DIRREC"
@@ -97,16 +97,11 @@ function setearDirectorios {
                 break
             else
                 regex='^[0-9]+$'
-                if [[ "$datasize_aux" =~ $regex ]]
+                if [[ "$datasize_aux" =~ $regex ]] && [ "$datasize_aux" -gt 0 ]
                 then
-                    if [ "$datasize_aux" -eq 0 ]
-                    then
-                        echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
-                    else
-                        break
-                    fi
+                    break
                 else
-                   echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
+                    echo "El espacio mínimo debe ser un numero entero positivo! Intente nuevamente."
                 fi
             fi
         done
@@ -130,10 +125,10 @@ function setearDirectorios {
 ################ INICIO DEL PROGRAMA ################
 #####################################################
 
-GRUPO=$PWD/Grupo08
-DIRCONF=dirconf
-ARCHCONF=$GRUPO/$DIRCONF/instalep.conf
-ARCHLOG=$GRUPO/$DIRCONF/instalep.log
+GRUPO="$PWD/Grupo08"
+DIRCONF="dirconf"
+ARCHCONF="$GRUPO/$DIRCONF/instalep.conf"
+ARCHLOG="$GRUPO/$DIRCONF/instalep.log"
 
 #Nombres de directorios por defecto
 DIRBIN=bin
@@ -146,18 +141,18 @@ DIRLOG=log
 DIRNOK=nok
 
 #Creo directorio de configuracion
-mkdir -p $GRUPO/$DIRCONF
+mkdir -p "$GRUPO/$DIRCONF"
 
 #Creo archivo para log
 #touch $ARCHLOG
 
 #Detecto sistema ya instalado
-if [ -f $ARCHCONF ]
+if [ -f "$ARCHCONF" ]
 then
     cargarDirectorios
     echo "******************************************************"
     echo "*   *  * * EL SISTEMA EPLAM YA SE ENCUENTRA * *  *   *"
-    echo "*   *  * * * * * * *INSTALADo!!!!* * * * *  * *  *   *"
+    echo "*   *  * * * * * * * INSTALADO!!! * * * * * * *  *   *"
     echo "******************************************************"
 	listarDirectorios
 	exit 0
@@ -179,21 +174,21 @@ intentosPermitidos=2
 instalacionFinalizada=false
 while [ $cantidadIntentos -ne $intentosPermitidos ] && [ $instalacionFinalizada = false ]
 do
-	echo ">Desea continuar con la instalación? (Si – No):"
+    echo ">Desea continuar con la instalación? (Si – No):"
 	select continuar_instalacion in "Si" "No"; do
 		case $continuar_instalacion in
 			Si )
 				echo "Creando Estructuras de directorio. . ."
                 
-                mkdir -p $GRUPO
-				mkdir -p $GRUPO/$DIRBIN
-				mkdir -p $GRUPO/$DIRMAE
-				mkdir -p $GRUPO/$DIRREC
-				mkdir -p $GRUPO/$DIROK
-				mkdir -p $GRUPO/$DIRPROC #ver porque en el tp tiene otro nombre
-				mkdir -p $GRUPO/$DIRINFO
-				mkdir -p $GRUPO/$DIRLOG
-				mkdir -p $GRUPO/$DIRNOK
+                mkdir -p "$GRUPO"
+				mkdir -p "$GRUPO/$DIRBIN"
+				mkdir -p "$GRUPO/$DIRMAE"
+				mkdir -p "$GRUPO/$DIRREC"
+				mkdir -p "$GRUPO/$DIROK"
+				mkdir -p "$GRUPO/$DIRPROC" #ver porque en el tp tiene otro nombre
+				mkdir -p "$GRUPO/$DIRINFO"
+				mkdir -p "$GRUPO/$DIRLOG"
+				mkdir -p "$GRUPO/$DIRNOK"
 					
 				#Escritura de archivo instalep.conf
 				touch $ARCHCONF
@@ -209,11 +204,11 @@ do
 				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
 				echo "Instalando Programas y Funciones"
-				cp __scripts/* $GRUPO/$DIRBIN
-                chmod +x $GRUPO/$DIRBIN/*.sh 
+				cp __scripts/* "$GRUPO/$DIRBIN"
+                chmod +x "$GRUPO/$DIRBIN"/*.sh 
 
 				echo "Instalando Archivos Maestros y Tablas"
-				cp __mae/* $GRUPO/$DIRMAE
+				cp __mae/* "$GRUPO/$DIRMAE"
 			
                 instalacionFinalizada=true
                 break;;
@@ -232,5 +227,5 @@ do
 	done
 done
 
-echo "Fin del proceso. Usuario:"
+echo "Fin del proceso. Usuario: $USER"
 date "+Fecha: %d/%m/%y Hora: %H:%M:%S"
