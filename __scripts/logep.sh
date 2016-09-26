@@ -24,7 +24,7 @@
 # mantiene en el log las ultimas m lineas cuando es excedido
 function podarLog {
 
-	cantLineasAconservar=10;
+	cantLineasAconservar=50;
 	cabecera="<<Log Excedido..>>"
 	
 	archivoTemp=$GRUPO/$DIRLOG/logTemporal.txt
@@ -36,6 +36,20 @@ function podarLog {
 	cat "$archivoTemp" > "$1"
 	rm "$archivoTemp"
 }
+
+
+
+#valida si el archivo log supera el tamanio permitido
+#$1 es el archivo
+function validarTamanioLog {
+
+	#valida que no supere 2K de datos
+	if [ $(stat -c%s "$1") -gt 2000  ];then
+		echo "entra a podar cunado el valor es"
+		podarLog "$1"
+	fi
+}
+
 
 
 function main {
@@ -51,12 +65,7 @@ function main {
 	echo  "$2  -  $3" >> $archivo
 
 	
-	cantLineasArchivo=$(wc -l "$archivo" | cut -f1 -d' ')
-
-	if [ $cantLineasArchivo -gt $cantLineasPermitidas ]; then
-		
-		podarLog $archivo
-	fi
+	validarTamanioLog $archivo
 
 
 	if [ $4 == 1 ]; then
