@@ -27,9 +27,9 @@ function podarLog {
 
 	cantLineasAconservar=50;
 	cabecera="<<Log Excedido..>>"
-	
+
 	archivoTemp=$path/logTemporal.txt
-	
+
 	touch $archivo
 
 	echo $cabecera >> $archivoTemp
@@ -48,8 +48,10 @@ function timestamp {
 function validarTamanioLog {
 
 	#valida que no supere 2K de datos
-	if [ $(stat -c%s "$1") -gt 2000  ];then
-		return 1		
+  # Uso wc -c para tener una solución portable. Las implementaciones de wc
+  # estandar deberian performar bien (sin leer todo el archivo)
+	if [ $(wc -c < "$1") -gt 2000  ];then
+		return 1
 	fi
 	return 0
 }
@@ -82,7 +84,7 @@ function main {
 
 
 	if [[ ! "$argumentoDirectorio" == "" && -d "$argumentoDirectorio" ]]; then
-		path=$argumentoDirectorio		
+		path=$argumentoDirectorio
 	else
 		if [[ -z $GRUPO || -z $DIRLOG ]]; then # validacion de las variables de ambiente
 			logError=1
@@ -92,14 +94,14 @@ function main {
 
 	archivo=$path/$1.log
 
-	capacidadMaximaLog=1000 #bytes	
+	capacidadMaximaLog=1000 #bytes
 
 	if [ ! -f $achivo ]; then
 		touch $archivo
 	fi
 
 	echo "$USER - $(timestamp) : $2  -  $tipoMensaje" >> $archivo
-	
+
 	tamanioValido=$( validarTamanioLog $archivo )
 	if [ ! tamanioValido ]; then
 		podarLog $archivo $path

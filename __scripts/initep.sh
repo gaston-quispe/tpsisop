@@ -62,10 +62,10 @@ function verificarVariables {
                 instalacionExitosa=1
         fi
 
-	# Si no puedo escribir en el log, exijo que reinstale ahora	
+	# Si no puedo escribir en el log, exijo que reinstale ahora
  	if [ $instalacionExitosa -eq 1 ]; then
 		return 1
-	fi	
+	fi
 
 	if [ -z $DIRMAE ]; then
 		$log_command "initep" "Directrio maestro no creado, por favor reinstalar" "ERR" "1"
@@ -94,19 +94,19 @@ function verificarVariables {
 
 	if [ -z $DIRLOG ]; then
 		$log_command "initep" "Falta el directorio de archivos de log, por favor reinstalar" "ERR" "1"
-		instalacionExitosa=1 
+		instalacionExitosa=1
 	fi
 
 	if [ -z $DIRMAE ]; then
 		$log_command "initep" "Directorio de Archivos rechazados no creado, por favor reinstalar" "ERR" "1"
                 instalacionExitosa=1
-        fi		
+        fi
 
  	if [ $instalacionExitosa -eq 0 ]; then
 		return 0
 	else
 		return 1
-	fi	
+	fi
 }
 
 if [ ! -f $1 ]
@@ -153,7 +153,7 @@ done
 for filename in $GRUPO/$DIRMAE/*.csv; do
   chmod +r $filename;
   if [ $? -ne 0  ]; then
-	$log_command "initep" "No se pudo agregar el permiso de lectura al script $filename" "WAR" "1"
+	$log_command "initep" "No se pudo agregar el permiso de lectura al archivo $filename" "WAR" "1"
     return 1;
   fi
 done
@@ -169,7 +169,7 @@ select activate_daemon in "Si" "No"; do
             break;;
         No )
             echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio bin: \n";
-            echo "$ ./(PATH)/demonep.sh &";
+            echo "$ demonep.sh &";
             break;;
         * ) echo "Por favor, ingrese una opción válida.";;
     esac
