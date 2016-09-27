@@ -58,6 +58,10 @@ function validarTamanioLog {
 
 function main {
 
+logError=0 #exito
+
+if [[ -n $GRUPO && -n $DIRLOG ]]; then # validacion de las variables de ambiente
+
 
 	#el argumento 3 es opcional por lo tanto si no se pasa por parametro se usa INFO por default
         if [[  "$3" != "WAR" && "$3" != "ERR" && "$3" != "INFO" ]]; then
@@ -104,6 +108,13 @@ function main {
 	if [ $argumentoMostrarMensaje == 1 ]; then
 		echo $2
 	fi
+
+else
+	#retorna 1 dado que las variables de ambiente no fueron inicializadas
+	logError=1
+fi
+
+return $logError
 
 }
 
