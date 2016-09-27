@@ -50,7 +50,7 @@ function validarTamanioLog {
 	#valida que no supere 2K de datos
   # Uso wc -c para tener una solución portable. Las implementaciones de wc
   # estandar deberian performar bien (sin leer todo el archivo)
-	if [ $(wc -c < "$1") -gt 2000  ];then
+	if [ $(wc -c < "$1") -gt $2  ];then
 		return 1
 	fi
 	return 0
@@ -94,15 +94,16 @@ function main {
 
 	archivo=$path/$1.log
 
-	capacidadMaximaLog=1000 #bytes
+  # La variable de entorno LOGSIZE tiene el tamaño máximo del log en kilobytes
+	capacidadMaximaLog=$(expr ${LOGSIZE:-2} \* 1024)
 
 	if [ ! -f $achivo ]; then
 		touch $archivo
 	fi
 
-	echo "$USER - $(timestamp) : $2  -  $tipoMensaje" >> $archivo
+	echo "$USER - $(timestamp) - $2 -  $tipoMensaje" >> $archivo
 
-	tamanioValido=$( validarTamanioLog $archivo )
+	tamanioValido=$( validarTamanioLog $archivo $capacidadMaximaLog )
 	if [ ! tamanioValido ]; then
 		podarLog $archivo $path
 	fi

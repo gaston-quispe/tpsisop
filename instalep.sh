@@ -56,7 +56,7 @@ function setearUnDirectorio {
     # $1 : mensaje a mostrar
     # $2 : directorio por defecto
     # $3 : variable donde guardar el directorio leido
-    
+
     while true
     do
         read -p ">$1 ($2):" dir_aux
@@ -200,7 +200,7 @@ do
 		case $continuar_instalacion in
 			Si )
 				$ARCHLOGGER "instalep" "Creando Estructuras de directorio. . ." "INFO" "0" "$GRUPO/$DIRCONF"
-                
+
                 mkdir -p "$GRUPO"
 				mkdir -p "$GRUPO/$DIRBIN"
 				mkdir -p "$GRUPO/$DIRMAE"
@@ -210,7 +210,7 @@ do
 				mkdir -p "$GRUPO/$DIRINFO"
 				mkdir -p "$GRUPO/$DIRLOG"
 				mkdir -p "$GRUPO/$DIRNOK"
-					
+
 				#Escritura de archivo instalep.conf
 				touch $ARCHCONF
 
@@ -223,14 +223,15 @@ do
 				echo DIRINFO=$DIRINFO=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRLOG=$DIRLOG=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
+                echo LOGSIZE=2=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
 				echo "Instalando Programas y Funciones"
 				cp __scripts/* "$GRUPO/$DIRBIN"
-                chmod +x "$GRUPO/$DIRBIN"/*.sh 
+                chmod +x "$GRUPO/$DIRBIN"/*.sh
 
 				echo "Instalando Archivos Maestros y Tablas"
 				cp __mae/* "$GRUPO/$DIRMAE"
-			
+
                 instalacionFinalizada=true
                 break;;
 		    No)
