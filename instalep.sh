@@ -66,8 +66,20 @@ function setearUnDirectorio {
         else
             if [ "$dir_aux" != "$DIRCONF" ]
             then
-             	eval "$3='$dir_aux'"
-                break
+                regex="=|(//)"
+                if [[ "$dir_aux" =~ $regex ]]
+                then                
+		$ARCHLOGGER "instalep" "El path no puede contener el carácter = ni mas de un carácter / consecutivo. Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+                else
+                    regex2="^/"
+                    if [[ "$dir_aux" =~ $regex2 ]]
+                    then
+		$ARCHLOGGER "instalep" "El path no puede comenzar con el carácter /. Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
+                    else
+             	        eval "$3='$dir_aux'"
+                        break
+                    fi
+                fi
             else
 		$ARCHLOGGER "instalep" "El nombre que intenta elegir se encuentra reservado. Intente nuevamente." "ERR" "1" "$GRUPO/$DIRCONF"
             fi
