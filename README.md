@@ -23,3 +23,9 @@ source ./Grupo8/bin/initep.sh ./Grupo8/dirconf/instalep.conf
 El source es necesario para setear las variables de entorno. Se le tiene que
 pasar la ruta al archivo de configuración, creado por instalep.sh, como parametro.
 
+
+### empaquetar.sh
+
+Genera el entragable en formato .tgz
+Sino funciona darle permisos 775
+Agregar en el script los archivos que se desean comprimir en el entregable
