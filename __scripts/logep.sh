@@ -58,10 +58,7 @@ function validarTamanioLog {
 
 function main {
 
-logError=0 #exito
-
-if [[ -n $GRUPO && -n $DIRLOG ]]; then # validacion de las variables de ambiente
-
+	logError=0 #exito
 
 	#el argumento 3 es opcional por lo tanto si no se pasa por parametro se usa INFO por default
         if [[  "$3" != "WAR" && "$3" != "ERR" && "$3" != "INFO" ]]; then
@@ -87,6 +84,9 @@ if [[ -n $GRUPO && -n $DIRLOG ]]; then # validacion de las variables de ambiente
 	if [[ ! "$argumentoDirectorio" == "" && -d "$argumentoDirectorio" ]]; then
 		path=$argumentoDirectorio		
 	else
+		if [[ -z $GRUPO || -z $DIRLOG ]]; then # validacion de las variables de ambiente
+			logError=1
+		fi
 		path=$GRUPO/$DIRLOG
 	fi
 
@@ -109,12 +109,8 @@ if [[ -n $GRUPO && -n $DIRLOG ]]; then # validacion de las variables de ambiente
 		echo $2
 	fi
 
-else
-	#retorna 1 dado que las variables de ambiente no fueron inicializadas
-	logError=1
-fi
 
-return $logError
+	return $logError
 
 }
 
