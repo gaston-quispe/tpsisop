@@ -244,6 +244,9 @@ do
 				echo "Instalando Archivos Maestros y Tablas"
 				cp __mae/* "$GRUPO/$DIRMAE"
 
+				echo "Instalando Archivos de Novedades"
+				cp __nov/* "$GRUPO/$DIRREC"
+
                 instalacionFinalizada=true
                 break;;
 		    No)

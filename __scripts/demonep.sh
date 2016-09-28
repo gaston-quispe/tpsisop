@@ -50,14 +50,25 @@ function loguearCantidadDeCiclos {
 # CHEQUEA SI HAY ARCHIVOS EN EL DIRECTORIO $GRUPO/DIRREC	   *
 #								   *
 #*******************************************************************
+ruta=$GRUPO/$DIRREC
+function chequearArchivos {
+#        cantidadDeArchivos= find $ruta -maxdepth 1 -type f| wc -l
+        archivos="$ruta/*"
+
+        for archivo in $archivos;
+        do
+              $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
+        done
+	return 0
+}
 
 
 
 cantidadDeCiclos=0
-
+chequearArchivos
 while true
 do	
 	let "cantidadDeCiclos+=1"
-	loguearCantidadDeCiclos	
-	sleep 5;
+	loguearCantidadDeCiclos		
+	sleep 25;
 done
