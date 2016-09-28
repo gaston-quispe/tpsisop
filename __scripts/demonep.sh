@@ -45,6 +45,12 @@ function loguearCantidadDeCiclos {
 	return 0	
 }
 
+#*******************************************************************
+#								   *
+# CHEQUEA SI HAY ARCHIVOS EN EL DIRECTORIO $GRUPO/DIRREC	   *
+#								   *
+#*******************************************************************
+
 
 
 cantidadDeCiclos=0
