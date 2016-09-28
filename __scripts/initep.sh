@@ -68,7 +68,7 @@ function verificarVariables {
 	fi
 
 	if [ -z $DIRMAE ]; then
-		$log_command "initep" "Directrio maestro no creado, por favor reinstalar" "ERR" "1"
+		$log_command "initep" "Directorio maestro no creado, por favor reinstalar" "ERR" "1"
 		instalacionExitosa=1
 	fi
 
@@ -168,8 +168,8 @@ select activate_daemon in "Si" "No"; do
             $log_command "initep" "Demonep corriendo bajo el no. $!" "INFO" "1" ;
             break;;
         No )
-            echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio bin: \n";
-            echo "$ demonep.sh &";
+            echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio de ejecutables: \n";
+            echo "$ ./demonep.sh &";
             break;;
         * ) echo "Por favor, ingrese una opción válida.";;
     esac
