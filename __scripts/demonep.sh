@@ -32,8 +32,26 @@ if ! verificarInicio; then
 	exit 1
 fi
 
+#*******************************************************************
+#							           *
+# MANTENER UN CONTADOR DE CICLOS DE EJECUCIÓN DE DEMONEP	   *
+#								   *
+#*******************************************************************
 
-while [ 1 ]
-do
-	sleep 25000;
+log_command=$GRUPO/$DIRBIN/logep.sh
+
+function loguearCantidadDeCiclos {
+	$log_command "demonep" "Demonep ciclo nro. $cantidadDeCiclos" "INFO" "0"
+	return 0	
+}
+
+
+
+cantidadDeCiclos=0
+
+while true
+do	
+	let "cantidadDeCiclos+=1"
+	loguearCantidadDeCiclos	
+	sleep 5;
 done

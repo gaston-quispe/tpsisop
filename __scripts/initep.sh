@@ -168,7 +168,7 @@ select activate_daemon in "Si" "No"; do
             $log_command "initep" "Demonep corriendo bajo el no. $!" "INFO" "1" ;
             break;;
         No )
-            echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio de ejecutables: \n";
+            echo "Para arrancar a mano tiene que ejecutar el siguiente comando,que se encuentra dentro del directorio de ejecutables: ";
             echo "$ ./demonep.sh &";
             break;;
         * ) echo "Por favor, ingrese una opción válida.";;
