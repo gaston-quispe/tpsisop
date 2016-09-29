@@ -45,6 +45,42 @@ function loguearCantidadDeCiclos {
 	return 0	
 }
 
+
+#******************************************************************
+#								  *
+# VERIFICAR QUE EL ARCHIVO SEA UN ARCHIVO COMÚN,DE TEXTO          *
+#								  *
+#******************************************************************
+
+function verificarArchivoTexto() {
+ 	if [ ! -f $1 ]
+        then
+       		 $log_command "demonep" "El archivo: $1 fue rechazado, motivo: no es un archivo de texto"  "INFO" "0"
+		 return 1
+        fi
+	return 0
+}
+
+
+
+#******************************************************************
+#                                                                 *
+# VERIFICAR QUE EL ARCHIVO NO ESTÉ VACIO                          *
+#                                                                 *
+#******************************************************************
+
+function verificarArchivoVacio(){
+	if [ ! -s $1 ]
+	then
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: archivo vacio" "INFO" "0"
+		return 1
+	fi
+	return 0
+}
+
+
+
+
 #*******************************************************************
 #								   *
 # CHEQUEA SI HAY ARCHIVOS EN EL DIRECTORIO $GRUPO/DIRREC	   *
@@ -56,8 +92,12 @@ function chequearArchivos {
         archivos="$ruta/*"
 
         for archivo in $archivos;
-        do
-              $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
+        do        
+	      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
+	      if  verificarArchivoTexto "$archivo" 
+	      then			
+			verificarArchivoVacio "$archivo"
+	      fi
         done
 	return 0
 }
