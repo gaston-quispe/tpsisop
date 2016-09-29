@@ -69,7 +69,7 @@ function verificarArchivoTexto() {
 #                                                                 *
 #******************************************************************
 
-function verificarArchivoVacio(){
+function verificarArchivoVacio() {
 	if [ ! -s $1 ]
 	then
 		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: archivo vacio" "INFO" "0"
