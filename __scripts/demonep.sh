@@ -79,6 +79,81 @@ function verificarArchivoVacio() {
 }
 
 
+#*******************************************************************
+#                                                                  *
+#  VERIFICAR AÑO                                                   *    
+#								   *
+#*******************************************************************
+
+function verificarAnio() {
+	anio=$(echo $1 | cut -d'_' -f 2)
+	anioActual="2016"
+	if [ $anio -ne $anioActual ]
+	then 
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
+		return 1
+	fi
+	return 0
+}
+
+#*******************************************************************
+#                                                                  *
+#  VERIFICAR PROVINCIA                                             *
+#                                                                  *
+#*******************************************************************
+
+function verificarProvincia() {	
+	 provincia=$(echo $1 | cut -d'_' -f 3)
+	 archivoProvincia=$GRUPO/$DIRMAE/provincias.csv
+	 match=$(cat "$archivoProvincia" | grep "^$provincia;.*$")
+	 if [ $? -eq '1' ]
+	 then 
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: provincia $provincia incorrecta" "INFO" "0"
+                return 1
+	 fi
+	 return 0	 
+}
+
+#*******************************************************************
+#                                                                  *
+#  VERIFICAR FECHA                                                 *
+#                                                                  *
+#*******************************************************************
+
+function verificarFecha() {
+	 fecha=$(echo $nombre | cut -d'_' -f 4)
+	 return 0
+}
+
+
+#*******************************************************************
+#                                                                  *
+#  VERIFICAR QUE EL FORMATO DEL NOMBRE DEL ARCHIVO SEA CORRECTO    *
+#                                                                  *
+#*******************************************************************
+
+function verificarFormato() {
+	nombreCompleto=${1##*/}
+	if echo "$nombreCompleto" | grep "^ejecutado_.*_.*_.*.csv$" > /dev/null;
+	then
+		if verificarAnio "$nombreCompleto"
+		then
+			if verificarProvincia "$nombreCompleto"
+			then
+				if verificarFecha "$nombreCompleto"
+				then
+					return 0	
+				fi 										
+			fi					
+		fi
+		return 1
+	else 
+		$log_command "demonep" "El archivo: $1 fue rechazado, formato de nombre incorrecto" "INFO" "0"
+		return 1
+	fi
+}
+
+
 
 
 #*******************************************************************
@@ -88,7 +163,6 @@ function verificarArchivoVacio() {
 #*******************************************************************
 ruta=$GRUPO/$DIRREC
 function chequearArchivos {
-#        cantidadDeArchivos= find $ruta -maxdepth 1 -type f| wc -l
         archivos="$ruta/*"
 
         for archivo in $archivos;
@@ -96,7 +170,10 @@ function chequearArchivos {
 	      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
 	      if  verificarArchivoTexto "$archivo" 
 	      then			
-			verificarArchivoVacio "$archivo"
+			if verificarArchivoVacio "$archivo"
+			then
+				verificarFormato "$archivo"
+			fi
 	      fi
         done
 	return 0
