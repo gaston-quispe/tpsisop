@@ -121,8 +121,52 @@ function verificarProvincia() {
 #*******************************************************************
 
 function verificarFecha() {
-	 fecha=$(echo $nombre | cut -d'_' -f 4)
-	 return 0
+	 fechac=$(echo $1 | cut -d'_' -f 4)
+	 fecha=${fechac%.*}
+	 fechaActual="$(date --date="`date +%F`" +%s)"
+	 fechaPresupuestaria="$(date --date="2016-01-01" +%s)"
+	 longitud=${#fecha}
+	 cantidad="8"	
+	
+#verifico que la longitud sea de 8 caracteres
+	 if [ $longitud -ne $cantidad ]
+	 then
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha,longitud erronea" "INFO" "0"		
+		return 1
+	 fi
+
+#verifico que sean todos numeros
+	 echo "$fecha" | grep "^[0-9]*$" > /dev/null;
+	 if [ $? -eq '1' ]
+	 then
+                $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha no numerica" "INFO" "0"
+		return 1
+	 fi 
+
+#verifico correcta fecha
+         fechaFormat=$(date -d $fecha +%F)
+         miFecha="$(date --date="$fechaFormat" +%s)"	
+	date "+%F" -d "$fechaFormat" > /dev/null
+	if [ $? -eq '1' ]
+	then
+                $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha incorrecta" "INFO" "0"	
+		return 1
+	fi
+
+#verifico que la fecha no sea mayor a la fecha actual
+	if [ $miFecha -gt $fechaActual ]
+	then
+               $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha mayor a la fecha actual" "INFO" "0"
+                return 1
+	fi
+
+#verifico que la fecha sea mayor a la fecha presupuestaria
+	if [ $miFecha -lt $fechaPresupuestaria ]
+	then
+               $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha menor a la fecha presupuestaria" "INFO" "0"
+	 	return 1
+	fi
+	return 0
 }
 
 
@@ -172,11 +216,19 @@ function chequearArchivos {
 	      then			
 			if verificarArchivoVacio "$archivo"
 			then
-				verificarFormato "$archivo"
+				if  verificarFormato "$archivo"
+				then
+					$log_command "demonep" "Archivo aceptado" "INFO" "0"
+					#esto lo tiene que hacer el movep
+					mv $archivo $GRUPO/$DIROK
+				else
+					#esto lo tiene que hacer el movep
+					mv $archivo $GRUPO/$DIRNOK							
+				fi
 			fi
 	      fi
         done
-	return 0
+	return 1
 }
 
 
