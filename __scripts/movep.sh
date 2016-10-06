@@ -11,11 +11,17 @@
 #$3 es el tipo de error
 function grabarLog {
 	tipoError=$3	
+	
 	if [ -z "$tipoError"  ]; then
 		tipoError="INFO"
 	fi
-
-	logep.sh "$1" "$2" "$3" "0"
+	
+	#caso especifico del inited
+	if [ "$1" == "initep"  ];then
+		logep "$1" "$2" "$tipoError" "0" "$GRUPO/dirconf/"
+	else
+		logep.sh "$1" "$2" "$tipoError" "0"
+	fi
 }
 
 
@@ -32,7 +38,7 @@ function obtenerSecuencia {
 	
 	if [ $cantArchivos -gt $maxCantArchDupl ];then
 		#loguear Error
-		grabarLog "$2" "no se pudo mover porque el archivo $1 supero la secuencia maxima permitida de 999" "WAR"
+		grabarLog "$2" "no se pudo mover porque el archivo $1 supero la secuencia maxima permitida de $maxCantArchDupl" "WAR"
 		archivo=""
 	else
 		archivo=$archivo.$cantArchivos
