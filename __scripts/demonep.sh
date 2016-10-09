@@ -28,7 +28,7 @@ function verificarInicio {
 if ! verificarInicio; then
 	echo "Primero debe ejecutar el initep.sh, por favor realizar el siguiente paso:
 	. ./(path)/initep.sh ./(path)/instalep.conf"
-	echo "ingrese una tecla para continuar"
+	echo "ingrese una tecla para terminar"
 	exit 1
 fi
 
@@ -236,11 +236,46 @@ function chequearArchivos {
 }
 
 
+#******************************************************************
+#								  *
+# VER SI ARRANCA EL PROCEP					  *
+#								  *
+#******************************************************************
+
+function ejecutarProcep {
+	ok=$GRUPO/$DIROK
+	cantidadDeArchivos=$(find $ok -maxdepth 1 -type f| wc -l)
+	cero="0"
+	corriendo=$(ps -e | grep procep.sh)
+	if [ $cantidadDeArchivos -gt $cero ]
+	then
+		if [ -z $corriendo ]
+		then		
+			#ejecutar procep
+                        #$GRUPO/$DIRBIN/procep.sh               
+			#$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "1"
+                        return 0		
+			
+		else
+			$log_command "demonep" "Invocación de Procep pospuesta para el siguiente ciclo"
+			return 1
+		fi
+	return 0
+	fi
+}
+
+#*******************************************************************
+#								   *
+#  DORMIR UN TIEMPO X Y EMPEZAR UN NUEVO CICLO                     *
+#								   *
+#*******************************************************************
+
 
 cantidadDeCiclos=0
-chequearArchivos
 while true
 do	
+	chequearArchivos
+	ejecutarProcep
 	let "cantidadDeCiclos+=1"
 	loguearCantidadDeCiclos		
 	sleep 25;
