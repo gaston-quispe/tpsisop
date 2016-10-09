@@ -18,6 +18,7 @@ La instalación se realiza con los siguientes pasos:
 # Se descomprime el instalador del sistema
 tar xzvf tp1sisop.tgz
 # La descompresión genera la carpeta EPLAM
+# Posicionarse en la carpeta descomprimida
 cd EPLAM
 # Corremos el instalador
 ./instalep.sh
@@ -26,6 +27,7 @@ cd EPLAM
 El script de instalación hará una serie de preguntas para customizar la
 instalación, tales como los directorios de archivos para logs o para los
 archivos nuevos a procesar.
+Puede optarse por la opción default presionando enter.
 
 ## Inicialización
 
@@ -35,14 +37,13 @@ Se tiene que correr de la siguiente manera:
 
 ```
 # Se puede usar source o .
-source ./Grupo8/directorio_bin/initep.sh ./Grupo8/directorio_conf/instalep.conf
+source ./Grupo8/directorio_bin/initep.sh ./Grupo8/dirconf/instalep.conf
 ```
 
 Donde el `directorio_bin` es el directorio definido como el que va a contener
 los ejecutables durante la instalación y el `instalep.conf` es el archivo de
-configuración generado por el instalador (se encuentra en el directorio
-`directorio_conf`, también definido durante la instalación).
-
+configuración generado por el instalador.
+Por default, `directorio_bin` es 'bin'.
 
 El source es necesario para setear las variables de entorno. Se le tiene que
 pasar la ruta al archivo de configuración, creado por instalep.sh, como parametro.
