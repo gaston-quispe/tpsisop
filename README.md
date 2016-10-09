@@ -48,7 +48,26 @@ Por default, `directorio_bin` es 'bin'.
 El source es necesario para setear las variables de entorno. Se le tiene que
 pasar la ruta al archivo de configuración, creado por instalep.sh, como parametro.
 
+# Inicializacion de demonio
+Al correr el script `initep.sh`, al final de la inicializacion se le da al usuario
+la posibilidad de inicializar el demonio.
+En caso de no querer hacerlo automaticamente, se puede optar por hacerlo manualmente
+ejecuntando:
+```bash
+./demonep.sh &
+```
 
+En ambos casos se imprimira por la salida estandar el proceso sobre el cual el demonio
+se esta ejecutando. Para acabar el proceso (matar el demonio) se debe correr el 
+siguiente comando:
+```bash
+kill <proceso ID>
+```
+
+Donde <proceso ID> es el numero del proceso que se imprimio por pantalla. En caso de no
+conocerlo, se puede hacer uso del comando `ps` para conocer los procesos activos y tomar
+el valor de PID del `demonep.sh`
+ 
 ### empaquetar.sh
 
 Genera el entragable en formato .tgz
