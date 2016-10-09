@@ -88,6 +88,11 @@ function verificarArchivoVacio() {
 function verificarAnio() {
 	anio=$(echo $1 | cut -d'_' -f 2)
 	anioActual="2016"
+	if [ -z $anio ]
+	then
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
+                return 1
+        fi
 	if [ $anio -ne $anioActual ]
 	then 
 		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
@@ -206,6 +211,7 @@ function verificarFormato() {
 #								   *
 #*******************************************************************
 ruta=$GRUPO/$DIRREC
+movep=$GRUPO/$DIRBIN
 function chequearArchivos {
         archivos="$ruta/*"
 
@@ -218,12 +224,10 @@ function chequearArchivos {
 			then
 				if  verificarFormato "$archivo"
 				then
-					$log_command "demonep" "Archivo aceptado" "INFO" "0"
-					#esto lo tiene que hacer el movep
-					mv $archivo $GRUPO/$DIROK
-				else
-					#esto lo tiene que hacer el movep
-					mv $archivo $GRUPO/$DIRNOK							
+					$log_command "demonep" "Archivo aceptado" "INFO" "0"				
+					$movep/movep.sh $archivo $GRUPO/$DIROK "demonep"
+				else					
+					$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
 				fi
 			fi
 	      fi
