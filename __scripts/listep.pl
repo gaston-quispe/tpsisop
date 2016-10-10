@@ -26,10 +26,10 @@ my $porTrimestre;
 sub listadoPS;
 
 # listado del Presupuesto Ejecutado
-sub listadoPE();
+sub listadoPE;
 
 # listado de Control del Presupuesto Ejecutado
-sub listadoCPE();
+sub listadoCPE;
 
 
 sub main() {
@@ -114,7 +114,17 @@ sub listadoPS {
   }
 
   my $total = 0;
-  foreach my $key (sort keys %data) {
+
+  # Uso un array de claves para iterar sobre el hash en el orden correcto
+  my @keys;
+  if ($porTrimestre) {
+    @keys = sort keys %data;
+  } else {
+    my @trimestres = ("Primer", "Segundo", "Tercer", "Cuarto");
+    @keys = map {$_ . " Trimestre 2016"} @trimestres;
+  }
+
+  foreach my $key (@keys) {
     my $subtotal = 0;
     foreach my $items ( @{$data{$key}} ) {
       my $value = @$items[1];
