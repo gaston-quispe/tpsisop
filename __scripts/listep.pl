@@ -11,14 +11,17 @@
 # ******************************************************************
 
 use strict;
+use warnings;
+use Getopt::Long qw(GetOptions);
 
 # Definiciones
 
 #
-my $dirmae;
-my $centros;
-my $anio;
-my $sancionado;
+my $DIRMAE;
+my $CENTROS;
+my $ANIO;
+my $SANCIONADO;
+my $COMANDO;
 # opción ct, si es true ordena primero por trimestre y luego por código de centro
 my $porTrimestre;
 
@@ -32,24 +35,81 @@ sub listadoPE;
 sub listadoCPE;
 
 
+sub verificarEntorno {
+  if (!exists $ENV{DIRMAE}) {
+    die "El entorno no está inicializado!";
+  }
+}
+
+sub procesarParametros {
+  $COMANDO = shift @ARGV || '';
+
+  if ( !grep( /^$COMANDO$/, ('sanc', 'ejec', 'cont') ) ) {
+    return 0;
+  }
+
+  GetOptions (
+    "tc" => \$porTrimestre
+  );
+  return 1;
+}
+
+
+#*******************************************************************
+#
+# Mensaje de ayuda
+#
+#*******************************************************************
+sub mostrarAyuda {
+  (my $helpMessage = q{Uso:
+    listep.pl [comando] [--tc]
+
+    Comando puede ser:
+        - sanc: Para listado del Presupuesto Sancionado
+        - ejec: Para listado del Presupuesto Ejecutado
+        - cont: Para listado de Control del Presupuesto Ejecutado
+
+    --tc: El comando sanc devuelve un listado por trimestre y luego por código del
+          centro. Para invertir el orden se le tiene que especificar esta opción.
+  })  =~ s/^ {4}//mg;
+
+  print $helpMessage;
+}
+
+
+#*******************************************************************
+#
+# Rutina main
+#
+#*******************************************************************
 sub main() {
-  print "hola\n";
-  $dirmae = $ENV{DIRMAE};
-  $anio = '2016';
-  $centros = $dirmae . '/centros.csv';
-  $sancionado = $dirmae . '/sancionado-' . $anio . '.csv';
-  $porTrimestre = 0;
-  listadoPS();
+  verificarEntorno;
+  if (!procesarParametros) {
+    return mostrarAyuda;
+  }
+
+  $DIRMAE = $ENV{DIRMAE};
+  $ANIO = '2015';
+  $CENTROS = $DIRMAE . '/centros.csv';
+  $SANCIONADO = $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  if ($COMANDO eq 'sanc') {
+    listadoPS();
+  } elsif ($COMANDO eq 'ejec') {
+    listadoPE();
+  } elsif ($COMANDO eq 'cont') {
+    listadoCPE();
+  }
 }
 
 main();
+
 
 # Lee el archivo de centros y llena el diccionario centrosHash
 # con id_centro => nombre del centro
 sub readCentros {
   my $centrosHashRef = shift;
 
-  open(my $centrosFile, "<$centros") || die "ERROR: No puedo abrir el archivo $centros\n";
+  open(my $centrosFile, "<$CENTROS") || die "ERROR: No puedo abrir el archivo $CENTROS\n";
 
   # Ignoro el header
   my $header = <$centrosFile>;
@@ -79,14 +139,20 @@ sub dotToComma {
   return $value;
 }
 
+
+#*******************************************************************
+#
+# Rutina de listado de Presupuesto Sancionado
+#
+#*******************************************************************
 sub listadoPS {
   my %centrosHash;
 
   readCentros(\%centrosHash);
 
-  open(my $sancionadoFile, "<$sancionado") || die "ERROR: No puedo abrir el archivo $sancionado\n";
+  open(my $sancionadoFile, "<$SANCIONADO") || die "ERROR: No puedo abrir el archivo $SANCIONADO\n";
 
-  print "A\ño presupuestario $anio;Total Sancionado\n";
+  print "A\ño presupuestario $ANIO;Total Sancionado\n";
   # Ignoro el header
   my $header = <$sancionadoFile>;
   my %data;
@@ -121,7 +187,7 @@ sub listadoPS {
     @keys = sort keys %data;
   } else {
     my @trimestres = ("Primer", "Segundo", "Tercer", "Cuarto");
-    @keys = map {$_ . " Trimestre 2016"} @trimestres;
+    @keys = map {$_ . " Trimestre " . $ANIO} @trimestres;
   }
 
   foreach my $key (@keys) {
@@ -134,7 +200,19 @@ sub listadoPS {
     $total += $subtotal;
     print "$key;" . dotToComma($subtotal) . "\n";
   }
-  print "Total Anual" . dotToComma($total) . "\n";
+  print "Total Anual;" . dotToComma($total) . "\n";
 
   close($sancionadoFile);
+}
+
+
+# listado del Presupuesto Ejecutado
+sub listadoPE {
+  print "ListadoPE!\n"
+}
+
+
+# listado de Control del Presupuesto Ejecutado
+sub listadoCPE {
+  print "ListadoCPE!\n"
 }
