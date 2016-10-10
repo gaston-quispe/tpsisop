@@ -229,7 +229,11 @@ function chequearArchivos {
 				else					
 					$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
 				fi
-			fi
+			else				                       
+                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"			
+			fi 
+	      else
+			$movep/movep.sh $archivo $GRUPO/$DIRONOK "demonep"
 	      fi
         done
 	return 1
