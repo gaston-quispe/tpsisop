@@ -28,7 +28,7 @@ function verificarInicio {
 if ! verificarInicio; then
 	echo "Primero debe ejecutar el initep.sh, por favor realizar el siguiente paso:
 	. ./(path)/initep.sh ./(path)/instalep.conf"
-	echo "ingrese una tecla para continuar"
+	echo "ingrese una tecla para terminar"
 	exit 1
 fi
 
@@ -88,6 +88,11 @@ function verificarArchivoVacio() {
 function verificarAnio() {
 	anio=$(echo $1 | cut -d'_' -f 2)
 	anioActual="2016"
+	if [ -z $anio ]
+	then
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
+                return 1
+        fi
 	if [ $anio -ne $anioActual ]
 	then 
 		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
@@ -206,6 +211,7 @@ function verificarFormato() {
 #								   *
 #*******************************************************************
 ruta=$GRUPO/$DIRREC
+movep=$GRUPO/$DIRBIN
 function chequearArchivos {
         archivos="$ruta/*"
 
@@ -218,25 +224,62 @@ function chequearArchivos {
 			then
 				if  verificarFormato "$archivo"
 				then
-					$log_command "demonep" "Archivo aceptado" "INFO" "0"
-					#esto lo tiene que hacer el movep
-					mv $archivo $GRUPO/$DIROK
-				else
-					#esto lo tiene que hacer el movep
-					mv $archivo $GRUPO/$DIRNOK							
+					$log_command "demonep" "Archivo aceptado" "INFO" "0"				
+					$movep/movep.sh $archivo $GRUPO/$DIROK "demonep"
+				else					
+					$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
 				fi
-			fi
+			else				                       
+                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"			
+			fi 
+	      else
+			$movep/movep.sh $archivo $GRUPO/$DIRONOK "demonep"
 	      fi
         done
 	return 1
 }
 
 
+#******************************************************************
+#								  *
+# VER SI ARRANCA EL PROCEP					  *
+#								  *
+#******************************************************************
+
+function ejecutarProcep {
+	ok=$GRUPO/$DIROK
+	cantidadDeArchivos=$(find $ok -maxdepth 1 -type f| wc -l)
+	cero="0"
+	corriendo=$(ps -e | grep procep.sh)
+	if [ $cantidadDeArchivos -gt $cero ]
+	then
+		if [ -z $corriendo ]
+		then		
+			#ejecutar procep
+                        #$GRUPO/$DIRBIN/procep.sh               
+			#$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "1"
+                        return 0		
+			
+		else
+			$log_command "demonep" "Invocación de Procep pospuesta para el siguiente ciclo"
+			return 1
+		fi
+	return 0
+	fi
+}
+
+#*******************************************************************
+#								   *
+#  DORMIR UN TIEMPO X Y EMPEZAR UN NUEVO CICLO                     *
+#								   *
+#*******************************************************************
+
 
 cantidadDeCiclos=0
-chequearArchivos
 while true
 do	
+	chequearArchivos
+	ejecutarProcep
 	let "cantidadDeCiclos+=1"
 	loguearCantidadDeCiclos		
 	sleep 25;
