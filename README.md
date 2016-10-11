@@ -21,13 +21,19 @@ tar xzvf tp1sisop.tgz
 # Posicionarse en la carpeta descomprimida
 cd EPLAM
 # Corremos el instalador
-./instalep.sh
+./instalep.sh <archivo logger>
 ```
 
+<archivo logger> es la ubicación del script `logep.sh`.
+Antes de completar la instalación, el logger se encuentra en:
+**__scripts/logep.sh**
 El script de instalación hará una serie de preguntas para customizar la
 instalación, tales como los directorios de archivos para logs o para los
 archivos nuevos a procesar.
 Puede optarse por la opción default presionando enter.
+Luego de ser completada exitosamente la instalacion, el logger podrá 
+encontrarse en:
+**<directorio de binarios>/logep.sh**
 
 ## Inicialización
 
@@ -48,7 +54,7 @@ Por default, `directorio_bin` es 'bin'.
 El source es necesario para setear las variables de entorno. Se le tiene que
 pasar la ruta al archivo de configuración, creado por instalep.sh, como parametro.
 
-# Inicializacion de demonio
+### Inicializacion de demonio
 Al correr el script `initep.sh`, al final de la inicializacion se le da al usuario
 la posibilidad de inicializar el demonio.
 En caso de no querer hacerlo automaticamente, se puede optar por hacerlo manualmente
