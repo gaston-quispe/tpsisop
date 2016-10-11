@@ -135,11 +135,9 @@ function setearDirectorios {
 
 function inicializarLogger {
 	# Dar permisos de ejecucion
-	filename=__scripts/logep.sh
-
-	chmod +x $filename;
+	chmod +x $ARCHLOGGER;
 	if [ $? -ne 0  ]; then
-		echo "No se pudo agregar el permiso de ejecución al script $filename";
+		echo "No se pudo agregar el permiso de ejecución al script $ARCHLOGGER";
 		return 1
 	fi
 
@@ -158,6 +156,19 @@ GRUPO="$PWD/Grupo08"
 DIRCONF="dirconf"
 ARCHCONF="$GRUPO/$DIRCONF/instalep.conf"
 
+ARCHLOGGER="$1"
+PARAM_VACIO='^\s*$'
+LOGEP_PATH='^.*logep\.sh$'
+
+if [[ $ARCHLOGGER =~ $PARAM_VACIO ]] ; then
+	echo "Ingrese ubicacion del archivo logep";
+	exit 1
+fi
+if ! [[ $ARCHLOGGER =~ $LOGEP_PATH ]] ; then
+	echo "Debe ingresar una ruta valida";
+	exit 1
+fi
+
 #Nombres de directorios por defecto
 DIRBIN=bin
 DIRMAE=mae
@@ -170,12 +181,11 @@ DIRNOK=nok
 
 if ! inicializarLogger; then
 	echo "Error inicializando logger";
-	exit 0
+	exit 1
 fi
 
 #Creo directorio de configuracion
 mkdir -p "$GRUPO/$DIRCONF"
-ARCHLOGGER=__scripts/logep.sh
 
 $ARCHLOGGER "instalep" "Inicio del proceso" "INFO" "0" "$GRUPO/$DIRCONF"
 
@@ -251,6 +261,7 @@ do
                 break;;
 		    No)
 				((cantidadIntentos++))
+				listarDirectorios
 				if [ $cantidadIntentos -ne $intentosPermitidos ]
 				then
 			        #Volver a pedir nombres de directorios
