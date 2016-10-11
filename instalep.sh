@@ -260,6 +260,8 @@ do
                 instalacionFinalizada=true
                 break;;
 		    No)
+				$ARCHLOGGER "instalep" "Instalacion cancelada" "INFO" "1" "$GRUPO/$DIRCONF"
+
 				((cantidadIntentos++))
 				listarDirectorios
 				if [ $cantidadIntentos -ne $intentosPermitidos ]
