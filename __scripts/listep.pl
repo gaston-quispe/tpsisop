@@ -18,6 +18,7 @@ use Getopt::Long qw(GetOptions);
 
 #
 my $DIRMAE;
+my $GRUPO;
 my $CENTROS;
 my $ANIO;
 my $SANCIONADO;
@@ -89,9 +90,10 @@ sub main() {
   }
 
   $DIRMAE = $ENV{DIRMAE};
+  $GRUPO = $ENV{GRUPO};
   $ANIO = '2015';
-  $CENTROS = $DIRMAE . '/centros.csv';
-  $SANCIONADO = $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  $CENTROS = $GRUPO . '/' . $DIRMAE . '/centros.csv';
+  $SANCIONADO = $GRUPO . '/' . $DIRMAE . '/sancionado-' . $ANIO . '.csv';
   if ($COMANDO eq 'sanc') {
     listadoPS();
   } elsif ($COMANDO eq 'ejec') {
@@ -109,7 +111,7 @@ main();
 sub readCentros {
   my $centrosHashRef = shift;
 
-  open(my $centrosFile, "<$CENTROS") || die "ERROR: No puedo abrir el archivo $CENTROS\n";
+  open(my $centrosFile, "<$CENTROS") || die "ERROR: No puedo abrir el archivo $CENTROS -> $!\n";
 
   # Ignoro el header
   my $header = <$centrosFile>;
@@ -150,7 +152,7 @@ sub listadoPS {
 
   readCentros(\%centrosHash);
 
-  open(my $sancionadoFile, "<$SANCIONADO") || die "ERROR: No puedo abrir el archivo $SANCIONADO\n";
+  open(my $sancionadoFile, "<$SANCIONADO") || die "ERROR: No puedo abrir el archivo $SANCIONADO -> $!\n";
 
   print "A\ño presupuestario $ANIO;Total Sancionado\n";
   # Ignoro el header
