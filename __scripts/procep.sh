@@ -52,8 +52,11 @@ cantidadRechazados=0
 
 primeraLinea=""
 
-while read -r linea
+DONE=false
+until $DONE
 do
+    read -r linea || DONE=true
+                
 	#echo "Registro a procesar: $linea"
 	
 	#************************************
@@ -175,12 +178,10 @@ do
 		if [ $fecha -le "${fechaArchivo:0:8}" -o $fecha -eq "${fechaArchivo:0:8}" ]
 		then	
 			#Validacion de rango de fecha
-			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -eq 1 ]
+			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -ne 1 ]
 			then
-			   	 #echo "Fecha valida"
-			else
-			    	echo "La fecha no se corresponde con el trimestre indicado"
-			    	#Grabar registro rechazado
+			    echo "La fecha no se corresponde con el trimestre indicado"
+			    #Grabar registro rechazado
 				touch $pathRechazado
 				echo "$nombreArchivo;La fecha no se corresponde con el trimestre indicado;$linea;$USER;$(fecha)">>$pathRechazado
 			fi
