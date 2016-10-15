@@ -10,6 +10,8 @@
 #
 # ******************************************************************
 
+log_command=logep.sh
+
 function fecha {
 	date "+Fecha: %d/%m/%y Hora: %H:%M:%S"
 }
@@ -38,6 +40,7 @@ function fechaEntre {
         echo -1
     fi
 }
+
 function checkenv {
   if [[ -z $GRUPO || -z $DIRBIN || -z $DIRMAE || -z $DIRREC || -z $DIROK ||
         -z $DIRPROC || -z $DIRINFO || -z $DIRLOG || -z $DIRNOK ]]; then
@@ -47,16 +50,15 @@ function checkenv {
 
 function validarRegistros {
 nombreArchivo=$1
+cantidadLeidos=0
 cantidadAceptados=0
 cantidadRechazados=0
-
-primeraLinea=""
 
 DONE=false
 until $DONE
 do
     read -r linea || DONE=true
-                
+         
 	#echo "Registro a procesar: $linea"
 	
 	#************************************
@@ -76,6 +78,7 @@ do
 		continue
 	fi
 
+	((cantidadLeidos++))
 	#echo "Nombre centro: $centro"
 	#Extraccion del año presupuestario
 	IFS=" " read -ra FECHA_PRESUPUESTO <<< "$trimestre"
@@ -95,7 +98,7 @@ do
 		#Si no existe el centro, el registro no es valido.
 		#Loggearlo
 		#Grabar registro rechazado
-		echo "Centro inexistente"
+		$log_command "procep" "Centro inexistente" "ERR" "1"
 		touch $pathRechazado
 		echo "$nombreArchivo;centro inexistente;$linea;$USER;$(fecha)">>$pathRechazado
 		((cantidadRechazados++))
@@ -105,7 +108,7 @@ do
 	#Extraccion de campos del centro
 	IFS=";" read -ra CAMPOS_CENTRO <<< "$lineaCentros"
 	NOMBRE_CENTRO=${CAMPOS_CENTRO[1]}
-	echo "Nombre centro del maestro: $NOMBRE_CENTRO"
+	#echo "Nombre centro del maestro: $NOMBRE_CENTRO"
 
 
 	#************************************
@@ -114,9 +117,8 @@ do
 	lineaActividades=$( grep "$actividad" $GRUPO/$DIRMAE/actividades.csv )
 	if [ -z "$lineaActividades" ]
 	then
-		echo "Actividad inexistente"
 		#Si no existe la actividad, el registro no es valido.
-		#Loggearlo
+		$log_command "procep" "Actividad inexistente" "ERR" "1"
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;actividad inexistente;$linea;$USER;$(fecha)">>$pathRechazado
@@ -143,9 +145,8 @@ do
 	#echo "Linea trimestres: $lineaTrimestres"
 	if [ -z "$lineaTrimestres" ]
 	then
-		echo "Trimestre inexistente"
 		#Si no existe el trimestre, el registro no es valido.
-		#Loggearlo
+		$log_command "procep" "Trimestre inexistente" "ERR" "1"
 		#Grabar registro rechazado
 		touch $pathRechazado
 		#touch "$GRUPO/$DIRPROC/rechazado-2016"	
@@ -180,21 +181,21 @@ do
 			#Validacion de rango de fecha
 			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -ne 1 ]
 			then
-			    echo "La fecha no se corresponde con el trimestre indicado"
-			    #Grabar registro rechazado
+				$log_command "procep" "La fecha no se corresponde con el trimestre indicado" "ERR" "1"			   
+				#Grabar registro rechazado
 				touch $pathRechazado
 				echo "$nombreArchivo;La fecha no se corresponde con el trimestre indicado;$linea;$USER;$(fecha)">>$pathRechazado
 			fi
 		else
-			echo "Fecha invalida"
+			$log_command "procep" "Fecha invalida" "ERR" "1"	
 		    	#Grabar registro rechazado
 			touch $pathRechazado
 			echo "$nombreArchivo;Fecha invalida;$linea;$USER;$(fecha)">>$pathRechazado
 		fi
 	else
-		echo "Año incorrecto"
 		#Si el año no es correcto, el registro no es valido
-		#Loggearlo
+		$log_command "procep" "Año incorrecto" "ERR" "1"
+
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;Trimestre inválido: trimestre no es del año presupuestario corriente;$linea;$USER;$(fecha)">>$pathRechazado
@@ -209,8 +210,7 @@ do
 	#echo "Gasto: $gasto"
 	if [[ $gasto < "0,0" ]]
 	then
-		echo "Gasto invalido"
-		Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
+		$log_command "procep" "El gasto debe ser mayor a cero." "ERR" "1"
 		touch $pathRechazado
 		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
 		((cantidadRechazados++))
@@ -223,6 +223,9 @@ do
 	
 	((cantidadAceptados++))
 done <$GRUPO/$DIROK/$archivo
+$log_command "procep" "Cantidad de registros leidos: $cantidadLeidos" "INFO" "1"
+$log_command "procep" "Cantidad de registros validados correctamente: $cantidadAceptados" "INFO" "1"
+$log_command "procep" "Cantidad de registros rechazados $cantidadRechazados" "INFO" "1"
 }
 
 if [ ! checkenv ]
@@ -231,12 +234,9 @@ then
 	exit 1
 fi
 
-ARCHLOGGER=logep.sh
-
 cantidadArchivos=$(ls $GRUPO/$DIROK | wc -l)
-nRegistrosValidos=0
 
-$ARCHLOGGER "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "1"
+$log_command "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "1"
 
 listaArchivos=$(ls $GRUPO/$DIROK)
 
@@ -245,7 +245,7 @@ do
 	#Verificacion de archivo duplicado.
 	if [ -f $GRUPO/$DIRPROC/proc/$archivo ]
 	then
-		$ARCHLOGGER "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
+		$log_command "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
 		#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 		$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 	else
@@ -255,14 +255,14 @@ do
 		if [[ "$linea" =~ $regex ]]
 		then
 			#Validacion de campos
-			$ARCHLOGGER "procep" "Archivo a procesar $archivo" "INFO" "1"
+			$log_command "procep" "Archivo a procesar $archivo" "INFO" "1"
 			validarRegistros $archivo
 			
 			#Se mueve el archivo para evitar su reprocesamiento
 			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
 			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc "procep"
 		else
-			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
+			$log_command "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
 			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 		fi
