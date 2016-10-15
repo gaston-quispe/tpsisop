@@ -22,6 +22,8 @@ my $DIRINFO;
 my $DIRPROC;
 my $GRUPO;
 my $CENTROS;
+my $ACTIVIDADES;
+my $ACT_CENTROS;
 my $ANIO = '2015';
 my $SANCIONADO;
 my $COMANDO;
@@ -68,6 +70,23 @@ sub procesarParametros {
   return 1;
 }
 
+sub getCodigoAct {
+  my ($actName) = @_;
+  open(my $actividadesFile, "<$ACTIVIDADES") || die "ERROR: No puedo abrir el archivo $ACTIVIDADES -> $!\n";
+
+  while (my $line = <$actividadesFile>) {
+    chomp $line;
+    my @fields = split(/;/, $line);
+    # index 3 == campo name de actividad
+    if ($fields[3] eq $actName) {
+      close $actividadesFile;
+      return $fields[0];
+    }
+  }
+
+  close $actividadesFile;
+  return "";
+}
 
 #*******************************************************************
 #
@@ -121,12 +140,20 @@ sub main() {
   $DIRINFO = $ENV{DIRINFO};
   $DIRPROC = $ENV{DIRPROC};
   # Comento al grupo durante el desarrollo
-  # $GRUPO = $ENV{GRUPO};
+#  $GRUPO = $ENV{GRUPO};
   # $ANIO = '2015';
   $CENTROS = $DIRMAE . '/centros.csv';
-  # $CENTROS = $GRUPO . '/' . $CENTROS
+#  $CENTROS = $GRUPO . '/' . $CENTROS;
+
+  $ACTIVIDADES = $DIRMAE . '/actividades.csv';
+#  $ACTIVIDADES = $GRUPO . '/' . $ACTIVIDADES;
+
+  $ACT_CENTROS = $DIRMAE . 'tabla-AxC.csv';
+#  $ACT_CENTROS = $GRUPO . '/' . $ACT_CENTROS;
+
   $SANCIONADO = $DIRMAE . '/sancionado-' . $ANIO . '.csv';
-  # $SANCIONADO = $GRUPO . '/' . $SANCIONADO
+#  $SANCIONADO = $GRUPO . '/' . $SANCIONADO;
+
   if ($COMANDO eq 'sanc') {
     listadoPS();
   } elsif ($COMANDO eq 'ejec') {
@@ -269,25 +296,31 @@ sub listadoPS {
 # listado del Presupuesto Ejecutado
 # Necesito archivos: AxC, los ejecutados de un año
 sub listadoPE {
-  print "ListadoPE!\n"
-
+  print "ListadoPE!\n";
   # Leer la tabla AxC
 
-  my @ejecutados = glob("$DIRINFO/ejecutado_$ANIO_*.csv");
+  open(my $actXcentrosFile, "<$ACT_CENTROS") || die "ERROR: No puedo abrir el archivo $ACT_CENTROS -> $!\n";
+
+  my @ejecutados = < $DIRPROC . "/proc" . "/ejecutado_" . $ANIO . "_*.csv">;
   my @lineas;
   my $output = join($SEP, ('Fecha','Centro','Nom Cen','cod Act','Actividad',
                            'Trimestre','Gasto','Provincia','Control'));
   foreach my $file (@ejecutados) {
       open my $fh, '<', $file;
-      while (my $line = <$centrosFile>) {
-        chomp $line;
-        my @fields = split(/;/, $line);
-        # if cumple con los filtros
 
-        push(@lineas, @fields);
+      while (my $ejecLine = <$file>) {
+        chomp $ejecLine;
+        my @fieldsEjecLine = split(/;/, $ejecLine);
+        my $codigoAct = getCodigoAct($fieldsEjecLine[3]);
+        if ($codigoAct eq "") {
+          # TODO ..
+          # Nombre de actividad incorrecto -> retornar error ?
+        }
       }
+
   }
 
+  close($centrosFile);
 }
 
 
