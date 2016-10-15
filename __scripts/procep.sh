@@ -125,11 +125,11 @@ do
 	IFS=";" read -ra CAMPOS_ACTIVIDAD <<< "$lineaActividades"
 	CODIGO_ACTIVIDAD=${CAMPOS_ACTIVIDAD[0]}
 	CODIGO_PROVINCIA=${CODIGO_ACTIVIDAD:5}
-	echo "Codigo provincia: $CODIGO_PROVINCIA"
+	#echo "Codigo provincia: $CODIGO_PROVINCIA"
 
 	#Extraccion del nombre de la provincia que realiza la actividad mediante su codigo.
 	lineaProvincias=$( grep "^$CODIGO_PROVINCIA;" $GRUPO/$DIRMAE/provincias.csv )
-	echo "Linea provincias: $lineaProvincias"
+	#echo "Linea provincias: $lineaProvincias"
 	IFS=";" read -ra CAMPOS_PROVINCIA <<< "$lineaProvincias"
 	NOMBRE_PROVINCIA=${CAMPOS_PROVINCIA[1]}
 
@@ -137,7 +137,7 @@ do
 	#	Validacion de Trimestre      *
 	#*************************************
 	lineaTrimestres=$( grep "$trimestre" $GRUPO/$DIRMAE/trimestres.csv )
-	echo "Linea trimestres: $lineaTrimestres"
+	#echo "Linea trimestres: $lineaTrimestres"
 	if [ -z "$lineaTrimestres" ]
 	then
 		echo "Trimestre inexistente"
@@ -158,12 +158,12 @@ do
 	FDESDE_TRI=${CAMPOS_TRIMESTRE[2]}
 	FHASTA_TRI=${CAMPOS_TRIMESTRE[3]}
 	
-	echo "Nombre trimestre: $nombreTrimestre"
-	echo "Año trimestre: $anioTrimestre"
+	#echo "Nombre trimestre: $nombreTrimestre"
+	#echo "Año trimestre: $anioTrimestre"
 	anioCorriente="2016"
 	if [ "$anioTrimestre" == "$anioCorriente" ]
 	then	
-		echo "Año igual al año corriente"
+		#echo "Año igual al año corriente"
 
 		#*********************************
 		#	Validacion de fecha      *
@@ -177,7 +177,7 @@ do
 			#Validacion de rango de fecha
 			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -eq 1 ]
 			then
-			   	 echo "Fecha valida"
+			   	 #echo "Fecha valida"
 			else
 			    	echo "La fecha no se corresponde con el trimestre indicado"
 			    	#Grabar registro rechazado
@@ -205,25 +205,23 @@ do
 	#********************************
 	#	Validacion de Gasto     *
 	#********************************
-	echo "Gasto: $gasto"
-	#RESULTADO=$( echo "$gasto>0,0" | bc )
-	#echo "Resultado: $RESULTADO"
-	#if [ $RESULTADO -eq 0 ]
-	#then
-	#	echo "Gasto invalido"
-		#Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
-		#touch $pathRechazado
-		#echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
-	#	((cantidadRechazados++))
-	#	continue
-	#fi
+	#echo "Gasto: $gasto"
+	if [[ $gasto < "0,0" ]]
+	then
+		echo "Gasto invalido"
+		Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
+		touch $pathRechazado
+		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
+		((cantidadRechazados++))
+		continue
+	fi
 	
 	#Si el registro paso las validaciones, lo grabo como aceptado.
 	touch $pathAceptado
 	echo "$id;$fecha;$centro;$actividad;$trimestre;$gasto;$nombreArchivo;$CODIGO_ACTIVIDAD;$NOMBRE_PROVINCIA;$NOMBRE_CENTRO">>$pathAceptado
 	
 	((cantidadAceptados++))
-done <$GRUPO/$DIRREC/$archivo
+done <$GRUPO/$DIROK/$archivo
 }
 
 if [ ! checkenv ]
@@ -234,12 +232,12 @@ fi
 
 ARCHLOGGER=logep.sh
 
-cantidadArchivos=$(ls $GRUPO/$DIRREC | wc -l)
+cantidadArchivos=$(ls $GRUPO/$DIROK | wc -l)
 nRegistrosValidos=0
 
 $ARCHLOGGER "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "1"
 
-listaArchivos=$(ls $GRUPO/$DIRREC)
+listaArchivos=$(ls $GRUPO/$DIROK)
 
 for archivo in $listaArchivos
 do
@@ -247,10 +245,10 @@ do
 	if [ -f $GRUPO/$DIRPROC/proc/$archivo ]
 	then
 		$ARCHLOGGER "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
-		mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
+		mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 	else
 		#Verificacion de formato
-		linea=$(sed -n '2p' $GRUPO/$DIRREC/$archivo)
+		linea=$(sed -n '2p' $GRUPO/$DIROK/$archivo)
 		regex='^([^;]+;){5}[^;]+$'
 		if [[ "$linea" =~ $regex ]]
 		then
@@ -259,10 +257,10 @@ do
 			validarRegistros $archivo
 			
 			#Se mueve el archivo para evitar su reprocesamiento
-			mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRPROC/proc
+			mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
 		else
 			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
-			mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
+			mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 		fi
 	fi
 done
