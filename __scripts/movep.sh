@@ -10,12 +10,12 @@
 #$2 es el mensaje
 #$3 es el tipo de error
 function grabarLog {
-	tipoError=$3	
-	
+	tipoError=$3
+
 	if [ -z "$tipoError"  ]; then
 		tipoError="INFO"
 	fi
-	
+
 	#caso especifico del inited
 	if [ "$1" == "initep"  ];then
 		logep "$1" "$2" "$tipoError" "0" "$GRUPO/dirconf/"
@@ -27,15 +27,15 @@ function grabarLog {
 
 #$1 archivo con path completo
 #$2 comando invocador
-function obtenerSecuencia {	
-	pathArchivo=$1	
+function obtenerSecuencia {
+	pathArchivo=$1
 	dirArchivo=$(dirname $pathArchivo)/
 	archivo=${pathArchivo##*/}
 	maxCantArchDupl=999
 	rango=2
 	cantArchivos=`ls $dirArchivo | grep -c "^${archivo}[.][1-9]\([0-9]\)\?\{$rango\}$"`
 	let cantArchivos=$cantArchivos+1
-	
+
 	if [ $cantArchivos -gt $maxCantArchDupl ];then
 		#loguear Error
 		grabarLog "$2" "no se pudo mover porque el archivo $1 supero la secuencia maxima permitida de $maxCantArchDupl" "WAR"
@@ -57,7 +57,7 @@ function main {
 	dirOrigen=$(dirname $archivo)/
 	dirDestino=$2
 	terminacionBarra="^.*/$"
-	
+
 
 	#if [ $# -lt 2 ] | [ $# -gt 3 ];then
 	#	#loguear mensaje
@@ -85,7 +85,7 @@ function main {
 	if ! [ -f $archivo ];then
 		#loguear mensaje
 		grabarLog "$comando" "no se pudo mover debido a que : $archivo no es un archivo " "WAR"
-		exit -2	
+		exit -2
 	fi
 
 
@@ -97,11 +97,11 @@ function main {
 
 
 	if  ! [[ $dirDestino  =~ $terminacionBarra ]];then
-		dirDestino=$dirDestino/	
+		dirDestino=$dirDestino/
 	fi
 
 
-	empiezaDelHome="^/home/.*/$"
+	empiezaDelHome="^/.*/$"
 	path=${PWD}
 
 	if ! [[ $dirDestino =~ $empiezaDelHome ]];then
@@ -113,16 +113,15 @@ function main {
 		fi
 	fi
 
-	
+
 	if ! [[ $dirOrigen =~ $empiezaDelHome ]];then
 		#se tiene que agregar la ruta completa
 		if [ $dirOrigen == "./" ];then
 			dirOrigen=$path/
 		else
 			dirOrigen=$path/$dirOrigen
-		fi	
-	fi	
-
+		fi
+	fi
 
 	archivoDestino=${archivo##*/}
 	archivoDestinoDuplicado=$archivoDestino
@@ -134,29 +133,29 @@ function main {
 	if [ "$dirDestino" == "$dirOrigen" ]; then
 		grabarLog "$comando" "no se pudo mover debido a que : el directorio destino y el directorio origen son el mismo " "WAR"
 		#loguer mensaje
-		exit -4	
+		exit -4
 	fi
 
 
 	if ! [ -f $archivoDestino ];then
 		grabarLog "$comando" "el archivo $archivo se movio satisfactoriamente a $dirDestino " "INFO"
-		mv $archivo $archivoDestino				
+		mv $archivo $archivoDestino
 	else
 		if ! [ -d $dirDestinoDuplicado ];then
 			mkdir $dirDestinoDuplicado
 		fi
 
 		archivoDestinoDuplicado=$(obtenerSecuencia $archivoDestinoDuplicado $comando)
-		
+
 		if [ -z $archivoDestinoDuplicado ];then
 			exit -5
 		fi
 
 		grabarLog "$comando" "el archivo se encuentra duplicado en $dirDestino, y se movio a $dirDestinoDuplicado" "INFO"
-		#echo "-----------------"
-		#echo "archivo destino  $archivoDestinoDuplicado"
-		#echo "archivo origen $archivo"
-		#echo "-----------------"
+		# echo "-----------------"
+		# echo "archivo destino  $archivoDestinoDuplicado"
+		# echo "archivo origen $archivo"
+		# echo "-----------------"
 		mv $archivo $archivoDestinoDuplicado
 	fi
 

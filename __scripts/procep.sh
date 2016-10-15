@@ -245,7 +245,8 @@ do
 	if [ -f $GRUPO/$DIRPROC/proc/$archivo ]
 	then
 		$ARCHLOGGER "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
-		mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
+		#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
+		$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 	else
 		#Verificacion de formato
 		linea=$(sed -n '2p' $GRUPO/$DIROK/$archivo)
@@ -257,10 +258,12 @@ do
 			validarRegistros $archivo
 			
 			#Se mueve el archivo para evitar su reprocesamiento
-			mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
+			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
+			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc "procep"
 		else
 			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
-			mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
+			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
+			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 		fi
 	fi
 done
