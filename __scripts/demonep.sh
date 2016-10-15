@@ -42,7 +42,7 @@ log_command=$GRUPO/$DIRBIN/logep.sh
 
 function loguearCantidadDeCiclos {
 	$log_command "demonep" "Demonep ciclo nro. $cantidadDeCiclos" "INFO" "0"
-	return 0	
+	return 0
 }
 
 
@@ -81,7 +81,7 @@ function verificarArchivoVacio() {
 
 #*******************************************************************
 #                                                                  *
-#  VERIFICAR AÑO                                                   *    
+#  VERIFICAR AÑO                                                   *
 #								   *
 #*******************************************************************
 
@@ -94,7 +94,7 @@ function verificarAnio() {
                 return 1
         fi
 	if [ $anio -ne $anioActual ]
-	then 
+	then
 		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: año $anio incorrecto" "INFO" "0"
 		return 1
 	fi
@@ -107,16 +107,16 @@ function verificarAnio() {
 #                                                                  *
 #*******************************************************************
 
-function verificarProvincia() {	
+function verificarProvincia() {
 	 provincia=$(echo $1 | cut -d'_' -f 3)
 	 archivoProvincia=$GRUPO/$DIRMAE/provincias.csv
 	 match=$(cat "$archivoProvincia" | grep "^$provincia;.*$")
 	 if [ $? -eq '1' ]
-	 then 
+	 then
 		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: provincia $provincia incorrecta" "INFO" "0"
                 return 1
 	 fi
-	 return 0	 
+	 return 0
 }
 
 #*******************************************************************
@@ -126,17 +126,18 @@ function verificarProvincia() {
 #*******************************************************************
 
 function verificarFecha() {
+	 DATE=${DATE_COMMAND:-date}
 	 fechac=$(echo $1 | cut -d'_' -f 4)
 	 fecha=${fechac%.*}
-	 fechaActual="$(date --date="`date +%F`" +%s)"
-	 fechaPresupuestaria="$(date --date="2016-01-01" +%s)"
+	 fechaActual="$($DATE --date="`$DATE +%F`" +%s)"
+	 fechaPresupuestaria="$($DATE --date="2016-01-01" +%s)"
 	 longitud=${#fecha}
-	 cantidad="8"	
-	
+	 cantidad="8"
+
 #verifico que la longitud sea de 8 caracteres
 	 if [ $longitud -ne $cantidad ]
 	 then
-		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha,longitud erronea" "INFO" "0"		
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha,longitud erronea" "INFO" "0"
 		return 1
 	 fi
 
@@ -146,15 +147,15 @@ function verificarFecha() {
 	 then
                 $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha no numerica" "INFO" "0"
 		return 1
-	 fi 
+	 fi
 
 #verifico correcta fecha
-         fechaFormat=$(date -d $fecha +%F)
-         miFecha="$(date --date="$fechaFormat" +%s)"	
-	date "+%F" -d "$fechaFormat" > /dev/null
+         fechaFormat=$($DATE -d $fecha +%F)
+         miFecha="$($DATE --date="$fechaFormat" +%s)"
+	$DATE "+%F" -d "$fechaFormat" > /dev/null
 	if [ $? -eq '1' ]
 	then
-                $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha incorrecta" "INFO" "0"	
+                $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha incorrecta" "INFO" "0"
 		return 1
 	fi
 
@@ -191,12 +192,12 @@ function verificarFormato() {
 			then
 				if verificarFecha "$nombreCompleto"
 				then
-					return 0	
-				fi 										
-			fi					
+					return 0
+				fi
+			fi
 		fi
 		return 1
-	else 
+	else
 		$log_command "demonep" "El archivo: $1 fue rechazado, formato de nombre incorrecto" "INFO" "0"
 		return 1
 	fi
@@ -214,24 +215,24 @@ ruta=$GRUPO/$DIRREC
 movep=$GRUPO/$DIRBIN
 function chequearArchivos {
         archivos="$ruta/*"
-
         for archivo in $archivos;
-        do        
+        do
+        echo "$archivo $GRUPO/$DIROK"
 	      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
-	      if  verificarArchivoTexto "$archivo" 
-	      then			
+	      if  verificarArchivoTexto "$archivo"
+	      then
 			if verificarArchivoVacio "$archivo"
 			then
 				if  verificarFormato "$archivo"
 				then
-					$log_command "demonep" "Archivo aceptado" "INFO" "0"				
+					$log_command "demonep" "Archivo aceptado" "INFO" "0"
 					$movep/movep.sh $archivo $GRUPO/$DIROK "demonep"
-				else					
+				else
 					$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
 				fi
-			else				                       
-                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"			
-			fi 
+			else
+                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
+			fi
 	      else
 			$movep/movep.sh $archivo $GRUPO/$DIRONOK "demonep"
 	      fi
@@ -254,12 +255,12 @@ function ejecutarProcep {
 	if [ $cantidadDeArchivos -gt $cero ]
 	then
 		if [ -z $corriendo ]
-		then		
+		then
 			#ejecutar procep
-                        #$GRUPO/$DIRBIN/procep.sh               
+                        #$GRUPO/$DIRBIN/procep.sh
 			#$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "1"
-                        return 0		
-			
+                        return 0
+
 		else
 			$log_command "demonep" "Invocación de Procep pospuesta para el siguiente ciclo"
 			return 1
@@ -277,10 +278,10 @@ function ejecutarProcep {
 
 cantidadDeCiclos=0
 while true
-do	
+do
 	chequearArchivos
 	ejecutarProcep
 	let "cantidadDeCiclos+=1"
-	loguearCantidadDeCiclos		
+	loguearCantidadDeCiclos
 	sleep 25;
 done
