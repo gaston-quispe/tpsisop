@@ -45,17 +45,20 @@ function checkenv {
   fi
 }
 
-function validarCampos {
+function validarRegistros {
 nombreArchivo=$1
 cantidadAceptados=0
 cantidadRechazados=0
 
-primeraLinea=
+primeraLinea=""
 
 while read -r linea
 do
 	#echo "Registro a procesar: $linea"
-	#Validacion Centro de Presupuestos
+	
+	#************************************
+	# Extraccion de campos del registro *
+	#************************************
 	IFS=";" read -ra CAMPOS <<< "$linea"
 	id=${CAMPOS[0]}
 	fecha=${CAMPOS[1]}
@@ -65,15 +68,18 @@ do
 	gasto=${CAMPOS[5]}
 
 	#echo "Nombre centro: $centro"
-	#Extraccion de campos
+	#Extraccion del año presupuestario
 	IFS=" " read -ra FECHA_PRESUPUESTO <<< "$trimestre"
 	ANIO_PRESUPUESTARIO=${FECHA_PRESUPUESTO[2]}
-
+	
+	#Paths donde mover los registros
 	pathRechazado=$GRUPO/$DIRPROC/rechazado-$ANIO_PRESUPUESTARIO
 	pathAceptado=$GRUPO/$DIRPROC/aceptado-$ANIO_PRESUPUESTARIO
-	
 
-	#Validacion de Centro
+	
+	#**********************************
+	#	Validacion de Centro      *
+	#**********************************
 	lineaCentros=$( grep "$centro" $GRUPO/$DIRMAE/centros.csv )
 	if [ -z "$lineaCentros" ]
 	then
@@ -87,13 +93,16 @@ do
 		continue
 	fi
 
-	#Extraccion de campos
+	#Extraccion de campos del centro
 	IFS=";" read -ra CAMPOS_CENTRO <<< "$lineaCentros"
 	NOMBRE_CENTRO=${CAMPOS_CENTRO[1]}
 	NOMBRE_PROVINCIA=""
 	echo "Nombre centro del maestro: $NOMBRE_CENTRO"
 
-	#Validacion de Actividad
+
+	#************************************
+	#	Validacion de Actividad     *
+	#************************************
 	lineaActividades=$( grep "$actividad" $GRUPO/$DIRMAE/actividades.csv )
 	if [ -z "$lineaActividades" ]
 	then
@@ -107,12 +116,19 @@ do
 		continue
 	fi
 
-
-	#Extraccion de campos
+	#Extraccion de campos de actividad
 	IFS=";" read -ra CAMPOS_ACTIVIDAD <<< "$lineaActividades"
 	CODIGO_ACTIVIDAD=${CAMPOS_ACTIVIDAD[0]}
+	CODIGO_PROVINCIA=${CODIGO_ACTIVIDAD:5}
+	echo "Codigo provincia: $CODIGO_PROVINCIA"
 
-	#Validacion de Trimestre
+	#Extraccion del nombre de la provincia que realiza la actividad
+	lineaProvincias=$( grep "$CODIGO_PROVINCIA" $GRUPO/$DIRMAE/provincias.csv )
+	echo "Linea provincias: $lineaProvincias"
+
+	#*************************************
+	#	Validacion de Trimestre      *
+	#*************************************
 	lineaTrimestres=$( grep "$trimestre" $GRUPO/$DIRMAE/trimestres.csv )
 	echo "Linea trimestres: $lineaTrimestres"
 	if [ -z "$lineaTrimestres" ]
@@ -127,7 +143,7 @@ do
 		continue
 	fi
 
-	#Extraccion de campos
+	#Extraccion de campos del trimestre
 	IFS=";" read -ra CAMPOS_TRIMESTRE <<< "$lineaTrimestres"
 	anioTrimestre=${CAMPOS_TRIMESTRE[0]}
 	nombreTrimestre=${CAMPOS_TRIMESTRE[1]}
@@ -140,8 +156,12 @@ do
 	if [ "$anioTrimestre" == "$anioCorriente" ]
 	then	
 		echo "Año igual al año corriente"
-		#Validacion de fecha
-		#Extraccion de campos
+
+		#*********************************
+		#	Validacion de fecha      *
+		#*********************************
+
+		#Extraccion de fecha del nombre del archivo
 		IFS="_" read -ra CAMPOS_ARCHIVO <<< "$nombreArchivo"
 		fechaArchivo=${CAMPOS_ARCHIVO[3]}
 		if [ $fecha -le "${fechaArchivo:0:8}" -o $fecha -eq "${fechaArchivo:0:8}" ]
@@ -174,7 +194,9 @@ do
 	fi
 
 	echo "Gasto: $gasto"
-	#Validacion de Gasto
+	#******************************
+	#	Validacion de Gasto   *
+	#******************************
 	if [ $gasto < "0,0" ]
 	then
 		#Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
@@ -187,6 +209,7 @@ do
 	#Si el registro paso las validaciones, lo grabo como aceptado.
 	touch $pathAceptado
 	echo "$id;$fecha;$centro;$actividad;$trimestre;$gasto;$nombreArchivo;$CODIGO_ACTIVIDAD;$NOMBRE_PROVINCIA;$NOMBRE_CENTRO">>$pathAceptado
+	
 	cantidadAceptados+=1
 done <$GRUPO/$DIRREC/$archivo
 }
@@ -204,12 +227,11 @@ nRegistrosValidos=0
 
 $ARCHLOGGER "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "1"
 
-#Verificar archivo duplicado.
 listaArchivos=$(ls $GRUPO/$DIRREC)
-
 
 for archivo in $listaArchivos
 do
+	#Verificacion de archivo duplicado.
 	if [ -f $GRUPO/$DIRPROC/$archivo ]
 	then
 		$ARCHLOGGER "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
@@ -222,7 +244,10 @@ do
 		then
 			#Validacion de campos
 			$ARCHLOGGER "procep" "Archivo a procesar $archivo" "INFO" "1"
-			validarCampos $archivo
+			validarRegistros $archivo
+			
+			#Se mueve el archivo para evitar su reprocesamiento
+			#mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRPROC/proc
 		else
 			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
 			#mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
