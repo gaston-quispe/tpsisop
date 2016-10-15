@@ -19,6 +19,7 @@ use Getopt::Long qw(GetOptions);
 #
 my $DIRMAE;
 my $DIRINFO;
+my $DIRPROC;
 my $GRUPO;
 my $CENTROS;
 my $ANIO = '2015';
@@ -44,7 +45,8 @@ sub listadoCPE;
 
 
 sub verificarEntorno {
-  foreach my $key (('DIRMAE', 'DIRINFO')) {
+  # TODO: Para el primer listado no necesito el DIRPROC
+  foreach my $key (('DIRMAE', 'DIRINFO', 'DIRPROC')) {
     if (!exists $ENV{$key}) {
       die "El entorno no está inicializado! Falta definir la variable $key\n";
     }
@@ -117,6 +119,7 @@ sub main() {
 
   $DIRMAE = $ENV{DIRMAE};
   $DIRINFO = $ENV{DIRINFO};
+  $DIRPROC = $ENV{DIRPROC};
   # Comento al grupo durante el desarrollo
   # $GRUPO = $ENV{GRUPO};
   # $ANIO = '2015';
@@ -264,8 +267,27 @@ sub listadoPS {
 
 
 # listado del Presupuesto Ejecutado
+# Necesito archivos: AxC, los ejecutados de un año
 sub listadoPE {
   print "ListadoPE!\n"
+
+  # Leer la tabla AxC
+
+  my @ejecutados = glob("$DIRINFO/ejecutado_$ANIO_*.csv");
+  my @lineas;
+  my $output = join($SEP, ('Fecha','Centro','Nom Cen','cod Act','Actividad',
+                           'Trimestre','Gasto','Provincia','Control'));
+  foreach my $file (@ejecutados) {
+      open my $fh, '<', $file;
+      while (my $line = <$centrosFile>) {
+        chomp $line;
+        my @fields = split(/;/, $line);
+        # if cumple con los filtros
+
+        push(@lineas, @fields);
+      }
+  }
+
 }
 
 
