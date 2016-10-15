@@ -202,9 +202,9 @@ do
 	fi
 
 	
-	#******************************
-	#	Validacion de Gasto   *
-	#******************************
+	#********************************
+	#	Validacion de Gasto     *
+	#********************************
 	echo "Gasto: $gasto"
 	#RESULTADO=$( echo "$gasto>0,0" | bc )
 	#echo "Resultado: $RESULTADO"
