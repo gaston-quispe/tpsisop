@@ -228,7 +228,7 @@ do
 				mkdir -p "$GRUPO/$DIRMAE"
 				mkdir -p "$GRUPO/$DIRREC"
 				mkdir -p "$GRUPO/$DIROK"
-				mkdir -p "$GRUPO/$DIRPROC" #ver porque en el tp tiene otro nombre
+				mkdir -p "$GRUPO/$DIRPROC/proc"
 				mkdir -p "$GRUPO/$DIRINFO"
 				mkdir -p "$GRUPO/$DIRLOG"
 				mkdir -p "$GRUPO/$DIRNOK"
