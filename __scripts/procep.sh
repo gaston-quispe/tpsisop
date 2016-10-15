@@ -67,6 +67,12 @@ do
 	trimestre=${CAMPOS[4]}
 	gasto=${CAMPOS[5]}
 
+	#Salteo la linea de id de campos
+	if [ $id = "ID_EJE" ]
+	then
+		continue
+	fi
+
 	#echo "Nombre centro: $centro"
 	#Extraccion del año presupuestario
 	IFS=" " read -ra FECHA_PRESUPUESTO <<< "$trimestre"
@@ -89,7 +95,7 @@ do
 		echo "Centro inexistente"
 		touch $pathRechazado
 		echo "$nombreArchivo;centro inexistente;$linea;$USER;$(fecha)">>$pathRechazado
-		cantidadRechazados+=1
+		((cantidadRechazados++))
 		continue
 	fi
 
@@ -111,7 +117,7 @@ do
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;actividad inexistente;$linea;$USER;$(fecha)">>$pathRechazado
-		cantidadRechazados+=1
+		((cantidadRechazados++))
 		continue
 	fi
 
@@ -139,8 +145,9 @@ do
 		#Loggearlo
 		#Grabar registro rechazado
 		touch $pathRechazado
-		echo "$nombreArchivo;Trimestre inválido: nombre inexistente;$linea;$USER;$(fecha)">>$pathRechazado
-		cantidadRechazados+=1		
+		#touch "$GRUPO/$DIRPROC/rechazado-2016"	
+		echo "$nombreArchivo;Trimestre inválido: nombre inexistente;$linea;$USER;$(fecha)">>$pathrechazado
+		((cantidadRechazados++))		
 		continue
 	fi
 
@@ -190,28 +197,32 @@ do
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;Trimestre inválido: trimestre no es del año presupuestario corriente;$linea;$USER;$(fecha)">>$pathRechazado
-		cantidadRechazados+=1		
+		((cantidadRechazados++))		
 		continue
 	fi
 
-	echo "Gasto: $gasto"
+	
 	#******************************
 	#	Validacion de Gasto   *
 	#******************************
-	if [ $gasto < "0,0" ]
-	then
+	echo "Gasto: $gasto"
+	#RESULTADO=$( echo "$gasto>0,0" | bc )
+	#echo "Resultado: $RESULTADO"
+	#if [ $RESULTADO -eq 0 ]
+	#then
+	#	echo "Gasto invalido"
 		#Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
-		touch $pathRechazado
-		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
-		cantidadRechazados+=1
-		continue
-	fi
+		#touch $pathRechazado
+		#echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
+	#	((cantidadRechazados++))
+	#	continue
+	#fi
 	
 	#Si el registro paso las validaciones, lo grabo como aceptado.
 	touch $pathAceptado
 	echo "$id;$fecha;$centro;$actividad;$trimestre;$gasto;$nombreArchivo;$CODIGO_ACTIVIDAD;$NOMBRE_PROVINCIA;$NOMBRE_CENTRO">>$pathAceptado
 	
-	cantidadAceptados+=1
+	((cantidadAceptados++))
 done <$GRUPO/$DIRREC/$archivo
 }
 
@@ -233,7 +244,7 @@ listaArchivos=$(ls $GRUPO/$DIRREC)
 for archivo in $listaArchivos
 do
 	#Verificacion de archivo duplicado.
-	if [ -f $GRUPO/$DIRPROC/$archivo ]
+	if [ -f $GRUPO/$DIRPROC/proc/$archivo ]
 	then
 		$ARCHLOGGER "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
 		mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
@@ -248,10 +259,10 @@ do
 			validarRegistros $archivo
 			
 			#Se mueve el archivo para evitar su reprocesamiento
-			#mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRPROC/proc
+			mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRPROC/proc
 		else
 			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
-			#mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
+			mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
 		fi
 	fi
 done
