@@ -213,30 +213,35 @@ function verificarFormato() {
 #*******************************************************************
 ruta=$GRUPO/$DIRREC
 movep=$GRUPO/$DIRBIN
-function chequearArchivos {
-        archivos="$ruta/*"
-        for archivo in $archivos;
-        do
-	      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
-	      if  verificarArchivoTexto "$archivo"
-	      then
-			if verificarArchivoVacio "$archivo"
-			then
-				if  verificarFormato "$archivo"
+function chequearArchivos {        
+        cantidadDeArchivos=$(find $ruta -maxdepth 1 -type f| wc -l)
+        cero="0"
+        if [ $cantidadDeArchivos -gt $cero ]
+        then
+		archivos="$ruta/*"
+        	for archivo in $archivos;
+	        do
+		      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
+		      if  verificarArchivoTexto "$archivo"
+		      then
+				if verificarArchivoVacio "$archivo"
 				then
-					$log_command "demonep" "Archivo aceptado" "INFO" "0"
-					$movep/movep.sh $archivo $GRUPO/$DIROK "demonep"
+					if  verificarFormato "$archivo"
+					then	
+						$log_command "demonep" "Archivo aceptado" "INFO" "0"
+						$movep/movep.sh $archivo $GRUPO/$DIROK "demonep"
+					else
+						$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
+					fi
 				else
-					$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
+	                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
 				fi
-			else
-                		$movep/movep.sh $archivo $GRUPO/$DIRNOK "demonep"
-			fi
-	      else
-			$movep/movep.sh $archivo $GRUPO/$DIRONOK "demonep"
-	      fi
-        done
-	return 1
+		      else
+				$movep/movep.sh $archivo $GRUPO/$DIRONOK "demonep"
+		      fi
+	        done
+	fi
+		return 1
 }
 
 
@@ -256,12 +261,12 @@ function ejecutarProcep {
 		if [ -z $corriendo ]
 		then
 			#ejecutar procep
-                        #$GRUPO/$DIRBIN/procep.sh
-			#$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "1"
+                        $GRUPO/$DIRBIN/procep.sh
+			$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "0"
                         return 0
 
 		else
-			$log_command "demonep" "Invocación de Procep pospuesta para el siguiente ciclo"
+			$log_command "demonep" "Invocación de Procep pospuesta para el siguiente ciclo" "INFO" "0"
 			return 1
 		fi
 	return 0
