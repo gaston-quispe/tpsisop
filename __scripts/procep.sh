@@ -96,7 +96,6 @@ do
 	#Extraccion de campos del centro
 	IFS=";" read -ra CAMPOS_CENTRO <<< "$lineaCentros"
 	NOMBRE_CENTRO=${CAMPOS_CENTRO[1]}
-	NOMBRE_PROVINCIA=""
 	echo "Nombre centro del maestro: $NOMBRE_CENTRO"
 
 
@@ -122,9 +121,11 @@ do
 	CODIGO_PROVINCIA=${CODIGO_ACTIVIDAD:5}
 	echo "Codigo provincia: $CODIGO_PROVINCIA"
 
-	#Extraccion del nombre de la provincia que realiza la actividad
-	lineaProvincias=$( grep "$CODIGO_PROVINCIA" $GRUPO/$DIRMAE/provincias.csv )
+	#Extraccion del nombre de la provincia que realiza la actividad mediante su codigo.
+	lineaProvincias=$( grep "^$CODIGO_PROVINCIA;" $GRUPO/$DIRMAE/provincias.csv )
 	echo "Linea provincias: $lineaProvincias"
+	IFS=";" read -ra CAMPOS_PROVINCIA <<< "$lineaProvincias"
+	NOMBRE_PROVINCIA=${CAMPOS_PROVINCIA[1]}
 
 	#*************************************
 	#	Validacion de Trimestre      *
