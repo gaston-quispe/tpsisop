@@ -217,7 +217,6 @@ function chequearArchivos {
         archivos="$ruta/*"
         for archivo in $archivos;
         do
-        echo "$archivo $GRUPO/$DIROK"
 	      $log_command "demonep" "Archivo detectado: $archivo " "INFO" "0"
 	      if  verificarArchivoTexto "$archivo"
 	      then
