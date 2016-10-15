@@ -20,9 +20,13 @@ use Getopt::Long qw(GetOptions);
 my $DIRMAE;
 my $GRUPO;
 my $CENTROS;
-my $ANIO;
+my $ANIO = '2015';
 my $SANCIONADO;
 my $COMANDO;
+
+# El separador a usar en los archivos de salida
+my $SEP = ';';
+
 # opción ct, si es true ordena primero por trimestre y luego por código de centro
 my $porTrimestre;
 
@@ -50,7 +54,8 @@ sub procesarParametros {
   }
 
   GetOptions (
-    "tc" => \$porTrimestre
+    "tc" => \$porTrimestre,
+    "anio:s" => \$ANIO,
   );
   return 1;
 }
@@ -63,15 +68,18 @@ sub procesarParametros {
 #*******************************************************************
 sub mostrarAyuda {
   (my $helpMessage = q{Uso:
-    listep.pl [comando] [--tc]
+    listep.pl [comando] [--tc] [--year|-y]
 
     Comando puede ser:
         - sanc: Para listado del Presupuesto Sancionado
         - ejec: Para listado del Presupuesto Ejecutado
         - cont: Para listado de Control del Presupuesto Ejecutado
 
-    --tc: El comando sanc devuelve un listado por trimestre y luego por código del
-          centro. Para invertir el orden se le tiene que especificar esta opción.
+    Argumentos de sanc:
+      --tc        El comando sanc devuelve un listado por trimestre y luego por código del
+                  centro. Para invertir el orden se le tiene que especificar esta opción.
+      -a, --anio  El año, para el cual se desea el listado calcular el listado. 2015 por
+                  defecto.
   })  =~ s/^ {4}//mg;
 
   print $helpMessage;
@@ -90,10 +98,13 @@ sub main() {
   }
 
   $DIRMAE = $ENV{DIRMAE};
-  $GRUPO = $ENV{GRUPO};
-  $ANIO = '2015';
-  $CENTROS = $GRUPO . '/' . $DIRMAE . '/centros.csv';
-  $SANCIONADO = $GRUPO . '/' . $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  # Comento al grupo durante el desarrollo
+  # $GRUPO = $ENV{GRUPO};
+  # $ANIO = '2015';
+  $CENTROS = $DIRMAE . '/centros.csv';
+  # $CENTROS = $GRUPO . '/' . $CENTROS
+  $SANCIONADO = $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  # $SANCIONADO = $GRUPO . '/' . $SANCIONADO
   if ($COMANDO eq 'sanc') {
     listadoPS();
   } elsif ($COMANDO eq 'ejec') {
@@ -154,7 +165,7 @@ sub listadoPS {
 
   open(my $sancionadoFile, "<$SANCIONADO") || die "ERROR: No puedo abrir el archivo $SANCIONADO -> $!\n";
 
-  print "A\ño presupuestario $ANIO;Total Sancionado\n";
+  print "A\ño presupuestario $ANIO" . $SEP . "Total Sancionado\n";
   # Ignoro el header
   my $header = <$sancionadoFile>;
   my %data;
@@ -197,12 +208,12 @@ sub listadoPS {
     foreach my $items ( @{$data{$key}} ) {
       my $value = @$items[1];
       $subtotal += $value;
-      print "@$items[0];" . dotToComma($value) . "\n";
+      print "@$items[0]" . $SEP . dotToComma($value) . "\n";
     }
     $total += $subtotal;
-    print "$key;" . dotToComma($subtotal) . "\n";
+    print "$key" . $SEP . dotToComma($subtotal) . "\n";
   }
-  print "Total Anual;" . dotToComma($total) . "\n";
+  print "Total Anual" . $SEP . dotToComma($total) . "\n";
 
   close($sancionadoFile);
 }
