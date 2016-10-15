@@ -261,8 +261,8 @@ function ejecutarProcep {
 		if [ -z $corriendo ]
 		then
 			#ejecutar procep
-                        $GRUPO/$DIRBIN/procep.sh
-			$log_command "initep" "procep corriendo bajo el no. $!" "INFO" "0"
+                        $GRUPO/$DIRBIN/procep.sh &                      
+			$log_command "demonep" "procep corriendo bajo el no. $!" "INFO" "0"
                         return 0
 
 		else
