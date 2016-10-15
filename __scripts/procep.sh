@@ -206,12 +206,11 @@ do
 	#********************************
 	#	Validacion de Gasto     *
 	#********************************
-	#echo "Gasto: $gasto"
-	if [[ $gasto < "0,0" ]]
+    if (( $(echo "$gasto 0" | awk '{print ($1 < $2)}') ))
 	then
 		echo "Gasto invalido"
-		Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
-		touch $pathRechazado
+		#Grabar el registro rechazado. Motivo: El gasto no puede ser negativo
+        touch $pathRechazado
 		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
 		((cantidadRechazados++))
 		continue
