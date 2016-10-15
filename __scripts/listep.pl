@@ -18,6 +18,7 @@ use Getopt::Long qw(GetOptions);
 
 #
 my $DIRMAE;
+my $DIRINFO;
 my $GRUPO;
 my $CENTROS;
 my $ANIO = '2015';
@@ -28,7 +29,9 @@ my $COMANDO;
 my $SEP = ';';
 
 # opción ct, si es true ordena primero por trimestre y luego por código de centro
-my $porTrimestre;
+my $porTrimestre = '';
+
+my $WRITE = '';
 
 # listado Presupuesto Sancionado
 sub listadoPS;
@@ -41,8 +44,10 @@ sub listadoCPE;
 
 
 sub verificarEntorno {
-  if (!exists $ENV{DIRMAE}) {
-    die "El entorno no está inicializado!";
+  foreach my $key (('DIRMAE', 'DIRINFO')) {
+    if (!exists $ENV{$key}) {
+      die "El entorno no está inicializado! Falta definir la variable $key\n";
+    }
   }
 }
 
@@ -56,6 +61,7 @@ sub procesarParametros {
   GetOptions (
     "tc" => \$porTrimestre,
     "anio:s" => \$ANIO,
+    "write" => \$WRITE,
   );
   return 1;
 }
@@ -68,18 +74,30 @@ sub procesarParametros {
 #*******************************************************************
 sub mostrarAyuda {
   (my $helpMessage = q{Uso:
-    listep.pl [comando] [--tc] [--year|-y]
+    listep.pl [comando] [--write|-w] [--tc] [--year|-y]
 
     Comando puede ser:
         - sanc: Para listado del Presupuesto Sancionado
         - ejec: Para listado del Presupuesto Ejecutado
         - cont: Para listado de Control del Presupuesto Ejecutado
 
-    Argumentos de sanc:
-      --tc        El comando sanc devuelve un listado por trimestre y luego por código del
-                  centro. Para invertir el orden se le tiene que especificar esta opción.
-      -a, --anio  El año, para el cual se desea el listado calcular el listado. 2015 por
-                  defecto.
+    Argumentos para todos los comandos:
+      --write, -w  Si se especifica este flag, el resultado se va a escribir en un archivo
+                   de salida (además de mostrarse por pantalla).
+
+    Comando sanc:
+      El comando sanc devuelve un listado con el presupuesto total para un año.
+      El nombre para el archivo, si se especifica la variable -w se genera de la
+      siguiente manera: sanc_ORDEN_AÑO.csv, donde ORDEN puede ser tc o ct (
+      dependiendo de si se especifica el parametro --tc), y AÑO es el año para el
+      cual se genera el listado.
+
+      Estos son sus parametros:
+
+      --tc         El comando sanc devuelve un listado por trimestre y luego por código del
+                   centro. Para invertir el orden se le tiene que especificar esta opción.
+      -a, --anio   El año, para el cual se desea el listado calcular el listado. 2015 por
+                   defecto.
   })  =~ s/^ {4}//mg;
 
   print $helpMessage;
@@ -98,6 +116,7 @@ sub main() {
   }
 
   $DIRMAE = $ENV{DIRMAE};
+  $DIRINFO = $ENV{DIRINFO};
   # Comento al grupo durante el desarrollo
   # $GRUPO = $ENV{GRUPO};
   # $ANIO = '2015';
@@ -115,6 +134,23 @@ sub main() {
 }
 
 main();
+
+# Toma por parametro el nombre del archivo, la extensión y el contenido
+# Escribe la salida en el archivo. Si este ya existe, lo escribe a un archivo
+# que de nombre tendra nombre_del_archivo.N.extensión
+# El archivo se escribe en el directorio, definido en la variable $DIRINFO
+sub writeOutput {
+  my ($name, $extension, $content) = @_;
+  my $filename = "$DIRINFO/$name.$extension";
+  my $counter = 0;
+  while (-e $filename) {
+    $filename = "$DIRINFO/$name.$counter.$extension";
+    $counter++;
+  }
+  open(my $fh, '>', $filename) or die "ERROR: No puedo abrir el archivo $filename -> $!\n";
+  print $fh $content;
+  close $fh;
+}
 
 
 # Lee el archivo de centros y llena el diccionario centrosHash
@@ -165,7 +201,7 @@ sub listadoPS {
 
   open(my $sancionadoFile, "<$SANCIONADO") || die "ERROR: No puedo abrir el archivo $SANCIONADO -> $!\n";
 
-  print "A\ño presupuestario $ANIO" . $SEP . "Total Sancionado\n";
+  my $output = "A\ño presupuestario $ANIO" . $SEP . "Total Sancionado\n";
   # Ignoro el header
   my $header = <$sancionadoFile>;
   my %data;
@@ -208,14 +244,22 @@ sub listadoPS {
     foreach my $items ( @{$data{$key}} ) {
       my $value = @$items[1];
       $subtotal += $value;
-      print "@$items[0]" . $SEP . dotToComma($value) . "\n";
+      $output .= "@$items[0]" . $SEP . dotToComma($value) . "\n";
     }
     $total += $subtotal;
-    print "$key" . $SEP . dotToComma($subtotal) . "\n";
+    $output .= "$key" . $SEP . dotToComma($subtotal) . "\n";
   }
-  print "Total Anual" . $SEP . dotToComma($total) . "\n";
+  $output .= "Total Anual" . $SEP . dotToComma($total) . "\n";
 
   close($sancionadoFile);
+
+  print $output;
+  if ($WRITE) {
+    my $filename = "sanc_" . (($porTrimestre) ? "tc" : "ct") . "_$ANIO";
+    writeOutput($filename, 'csv', $output);
+  }
+
+
 }
 
 
