@@ -233,7 +233,7 @@ sub readCentros {
 sub readAxC {
   fillHash($_[0], $ACT_CENTROS,
             (sub { return $_[0].$_[1] } ),
-            (sub { return  } ) );
+            (sub { return () } ) );
 }
 
 
@@ -241,9 +241,9 @@ sub readAxC {
 # id_centro y trimestre concatenados como clave, y la suma de los saldos
 # como valor
 sub readSancionado {
-  fillHash($_[0], $ACT_CENTROS,
+  fillHash($_[0], $SANCIONADO,
             (sub { return $_[0].$_[1] } ),
-            (sub { return  commaToDot($_[2]) + commaToDot($_[3]) } ) );
+            (sub { return commaToDot($_[2]) + commaToDot($_[3]) } ) );
 }
 
 #*******************************************************************
@@ -392,6 +392,9 @@ sub listadoCPE {
   my %sancionadoHash;
   readSancionado(\%sancionadoHash);
 
+  # my %sancionadoHash;
+  # readSancionado(\%sancionadoHash);
+
   my $output = join($SEP, ('ID', 'FECHA MOV','CENTRO','ACTIVIDAD','TRIMESTRE','IMPORTE',
                            'SALDO por TRIMESTRE','CONTROL','SALDO ACUMULADO')) . "\n";
 
@@ -402,15 +405,41 @@ sub listadoCPE {
     chomp($line);
     my @fields = split(/;/, $line);
 
-    push(@lines, [$fields[0], $fields[1], $fields[2], $fields[7], $fields[4], $fields[5]]);
+    push(@lines, [$fields[0], $fields[1], $fields[2], $fields[9], $fields[4], $fields[5]]);
 
   }
 
   @lines = sort { ($a->[2] cmp $b->[2]) or ($a->[1] cmp $b->[1]) } @lines;
 
+  # la combinación centro-trimestre actual
+  my $currentKey = '';
+  my $totalTrimestre = 0;
+  my $total = 0;
   foreach my $line (@lines) {
-    $output .= join($SEP, @{$line}) . "\n";
+    my @fields = @{$line};
+    my $key = $fields[2].$fields[4];
+
+    if ($key ne $currentKey) {
+      # Hay que agregar la linea del presupuesto trimestral sancionado
+
+      $totalTrimestre = commaToDot($sancionadoHash{$key});
+      $total += $totalTrimestre;
+      # TODO: agregar fecha del archivo trimestres
+      $output .= join($SEP, ('(++)', 'fecha', $fields[2], '0', $fields[4],
+                             dotToComma($totalTrimestre), '', dotToComma($total)));
+      $output .= "\n";
+      $currentKey = $key;
+    }
+
+    my $importe = commaToDot($fields[5]);
+    $totalTrimestre -= $importe;
+    $total -= $importe;
+    push(@fields, (dotToComma($totalTrimestre), '', dotToComma($total)));
+    $output .= join($SEP, @fields) . "\n";
   }
+
+  chomp($output);
+  $output .= ' (*)';
 
   print $output;
   # if (match_glob("foo.*", "foo.bar")) {
