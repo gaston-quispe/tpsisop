@@ -17,6 +17,9 @@ use Getopt::Long qw(GetOptions);
 # Definiciones
 
 #
+my $ANIO = '2016';
+my $COMANDO;
+
 my $DIRMAE;
 my $DIRINFO;
 my $DIRPROC;
@@ -24,15 +27,18 @@ my $GRUPO;
 my $CENTROS;
 my $ACTIVIDADES;
 my $ACT_CENTROS;
-my $ANIO = '2015';
 my $SANCIONADO;
-my $COMANDO;
+my $ACEPTADO;
+my $OUTDIR;
 
 # El separador a usar en los archivos de salida
 my $SEP = ';';
 
 # opción ct, si es true ordena primero por trimestre y luego por código de centro
 my $porTrimestre = '';
+
+# Lista de actividades a filtrar por
+my @filtroActividades;
 
 my $WRITE = '';
 
@@ -48,7 +54,7 @@ sub listadoCPE;
 
 sub verificarEntorno {
   # TODO: Para el primer listado no necesito el DIRPROC
-  foreach my $key (('DIRMAE', 'DIRINFO', 'DIRPROC')) {
+  foreach my $key (('DIRMAE', 'DIRINFO', 'DIRPROC', 'GRUPO')) {
     if (!exists $ENV{$key}) {
       die "El entorno no está inicializado! Falta definir la variable $key\n";
     }
@@ -66,27 +72,11 @@ sub procesarParametros {
     "tc" => \$porTrimestre,
     "anio:s" => \$ANIO,
     "write" => \$WRITE,
+    "actividad:s" => \@filtroActividades,
   );
   return 1;
 }
 
-sub getCodigoAct {
-  my ($actName) = @_;
-  open(my $actividadesFile, "<$ACTIVIDADES") || die "ERROR: No puedo abrir el archivo $ACTIVIDADES -> $!\n";
-
-  while (my $line = <$actividadesFile>) {
-    chomp $line;
-    my @fields = split(/;/, $line);
-    # index 3 == campo name de actividad
-    if ($fields[3] eq $actName) {
-      close $actividadesFile;
-      return $fields[0];
-    }
-  }
-
-  close $actividadesFile;
-  return "";
-}
 
 #*******************************************************************
 #
@@ -103,8 +93,10 @@ sub mostrarAyuda {
         - cont: Para listado de Control del Presupuesto Ejecutado
 
     Argumentos para todos los comandos:
-      --write, -w  Si se especifica este flag, el resultado se va a escribir en un archivo
+      -w, --write  Si se especifica este flag, el resultado se va a escribir en un archivo
                    de salida (además de mostrarse por pantalla).
+      -a, --anio   Este parametro se le puede especificar a los comandos sanc y ejec. Es el
+                   año, para el cual se desea calcular el listado. 2016 por defecto.
 
     Comando sanc:
       El comando sanc devuelve un listado con el presupuesto total para un año.
@@ -117,8 +109,17 @@ sub mostrarAyuda {
 
       --tc         El comando sanc devuelve un listado por trimestre y luego por código del
                    centro. Para invertir el orden se le tiene que especificar esta opción.
-      -a, --anio   El año, para el cual se desea el listado calcular el listado. 2015 por
-                   defecto.
+
+    Comando ejec:
+      Devuelve el presupuesto ejecutado para un año presupuestario especificado.
+
+      Parametros:
+      -ac, --actividad  La actividad o las actividades, para las cuales se va a
+                        generar el listado. Se pueden especificar multiples
+                        actividades de la siguiente manera:
+
+                        listep.pl ejec -ac "act 1" -ac "act 2"
+
   })  =~ s/^ {4}//mg;
 
   print $helpMessage;
@@ -139,20 +140,15 @@ sub main() {
   $DIRMAE = $ENV{DIRMAE};
   $DIRINFO = $ENV{DIRINFO};
   $DIRPROC = $ENV{DIRPROC};
-  # Comento al grupo durante el desarrollo
-#  $GRUPO = $ENV{GRUPO};
-  # $ANIO = '2015';
-  $CENTROS = $DIRMAE . '/centros.csv';
-#  $CENTROS = $GRUPO . '/' . $CENTROS;
+  $GRUPO = $ENV{GRUPO};
 
-  $ACTIVIDADES = $DIRMAE . '/actividades.csv';
-#  $ACTIVIDADES = $GRUPO . '/' . $ACTIVIDADES;
+  $CENTROS = $GRUPO . '/' .$DIRMAE . '/centros.csv';
+  $ACTIVIDADES = $GRUPO . '/' . $DIRMAE . '/actividades.csv';
+  $ACT_CENTROS = $GRUPO . '/' . $DIRMAE . '/tabla-AxC.csv';
+  $SANCIONADO = $GRUPO . '/' . $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  $OUTDIR = $GRUPO . '/' . $DIRINFO;
 
-  $ACT_CENTROS = $DIRMAE . 'tabla-AxC.csv';
-#  $ACT_CENTROS = $GRUPO . '/' . $ACT_CENTROS;
-
-  $SANCIONADO = $DIRMAE . '/sancionado-' . $ANIO . '.csv';
-#  $SANCIONADO = $GRUPO . '/' . $SANCIONADO;
+  $ACEPTADO = $GRUPO . '/' . $DIRPROC . '/aceptado-' . $ANIO;
 
   if ($COMANDO eq 'sanc') {
     listadoPS();
@@ -171,10 +167,10 @@ main();
 # El archivo se escribe en el directorio, definido en la variable $DIRINFO
 sub writeOutput {
   my ($name, $extension, $content) = @_;
-  my $filename = "$DIRINFO/$name.$extension";
+  my $filename = "$OUTDIR/$name.$extension";
   my $counter = 0;
   while (-e $filename) {
-    $filename = "$DIRINFO/$name.$counter.$extension";
+    $filename = "$OUTDIR/$name.$counter.$extension";
     $counter++;
   }
   open(my $fh, '>', $filename) or die "ERROR: No puedo abrir el archivo $filename -> $!\n";
@@ -199,6 +195,27 @@ sub readCentros {
   }
 
   close($centrosFile);
+}
+
+
+# Lee el archivo de centros y llena el diccionario axcHash
+# con id_actividad id_centro concatenados como clave, de esta forma es
+# sencillo luego verificar la existencia de esa combinación.
+sub readAxC {
+  my $axcHashRef = shift;
+
+  open(my $axcFile, "<$ACT_CENTROS") || die "ERROR: No puedo abrir el archivo $ACT_CENTROS -> $!\n";
+
+  # Ignoro el header
+  my $header = <$axcFile>;
+  while (my $line = <$axcFile>) {
+    chomp $line;
+    my @fields = split(/;/, $line);
+    # () utiliza menos espacio que 1
+    $axcHashRef->{$fields[0].$fields[1]} = ();
+  }
+
+  close($axcFile);
 }
 
 
@@ -293,34 +310,63 @@ sub listadoPS {
 }
 
 
-# listado del Presupuesto Ejecutado
+
+#*******************************************************************
+#
+# Rutina de listado del Presupuesto Ejecutado
 # Necesito archivos: AxC, los ejecutados de un año
+#
+#*******************************************************************
 sub listadoPE {
-  print "ListadoPE!\n";
+  my %axcHash;
+
+  readAxC(\%axcHash);
   # Leer la tabla AxC
 
-  open(my $actXcentrosFile, "<$ACT_CENTROS") || die "ERROR: No puedo abrir el archivo $ACT_CENTROS -> $!\n";
 
-  my @ejecutados = < $DIRPROC . "/proc" . "/ejecutado_" . $ANIO . "_*.csv">;
-  my @lineas;
   my $output = join($SEP, ('Fecha','Centro','Nom Cen','cod Act','Actividad',
-                           'Trimestre','Gasto','Provincia','Control'));
-  foreach my $file (@ejecutados) {
-      open my $fh, '<', $file;
+                           'Trimestre','Gasto','Provincia','Control')) . "\n";
 
-      while (my $ejecLine = <$file>) {
-        chomp $ejecLine;
-        my @fieldsEjecLine = split(/;/, $ejecLine);
-        my $codigoAct = getCodigoAct($fieldsEjecLine[3]);
-        if ($codigoAct eq "") {
-          # TODO ..
-          # Nombre de actividad incorrecto -> retornar error ?
-        }
-      }
+  open(my $aceptadoFile, "<$ACEPTADO") || die "ERROR: No puedo abrir el archivo $ACEPTADO -> $!\n";
 
+  my $total = 0;
+  while (my $line = <$aceptadoFile>) {
+    chomp($line);
+    # El archivo de aceptados tiene el ste formato:
+    # 0: id, 1: fecha, 2: id_centro, 3: act, 4: trimestre,
+    # 5: gasto, 6: archivo, 7: id_act, 8: prov, 9: centro
+    my @fields = split(/;/, $line);
+
+    # Verifico si el filtro está definido y la actividad está entre los valores
+    # a filtrar
+    if ( @filtroActividades && !grep(/^$fields[3]$/, @filtroActividades) ) {
+      next;
+    }
+
+    # La salida debe ser: fecha, id_centro, centro, id_act, act,
+    # trimestre, gasto, provincia, control
+    my @outFields = ($fields[1], $fields[2], $fields[9], $fields[7],
+                     $fields[3], $fields[4], $fields[5], $fields[8]);
+    $output .= join($SEP, @outFields);
+
+    # Verifico si en el diccionario de AxC aparece id_actividad y id_centro como clave
+    if (! exists $axcHash{$fields[7].$fields[2]}) {
+      $output .= $SEP . "gasto fuera de planificación\n"
+    } else {
+      $output .= "$SEP\n";
+    }
+
+    $total += commaToDot($fields[5]);
   }
 
-  close($centrosFile);
+  $output .= $SEP x 5 . "Total Credito Fiscal$SEP" . dotToComma($total) . "$SEP";
+  print $output;
+
+  if ($WRITE) {
+    writeOutput("ejec_$ANIO", 'csv', $output);
+  }
+
+  close($aceptadoFile);
 }
 
 
