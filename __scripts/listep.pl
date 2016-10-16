@@ -13,6 +13,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(GetOptions);
+use Text::Glob qw(match_glob);
 
 # Definiciones
 
@@ -159,6 +160,7 @@ sub main() {
   }
 }
 
+
 main();
 
 # Toma por parametro el nombre del archivo, la extensión y el contenido
@@ -178,23 +180,32 @@ sub writeOutput {
   close $fh;
 }
 
+# Esta subrutina toma los siguientes parametros:
+# hash, archivo, subrutina para clave, subrutina para valor
+# Lee un archivo y llena el hash que se le pasó por parametro usando las
+# funciones para obtener clave y valor (se les pasa el listado de variables)
+sub fillHash {
+  my ($centrosHashRef, $filename, $getKey, $getValue) = @_;
+
+  open(my $fh, "<$filename") || die "ERROR: No puedo abrir el archivo $filename -> $!\n";
+
+  # Ignoro el header
+  my $header = <$fh>;
+  while (my $line = <$fh>) {
+    chomp $line;
+    my @fields = split(/;/, $line);
+    $centrosHashRef->{&{$getKey}(@fields)} = &{$getValue}(@fields);
+  }
+
+  close($fh);
+}
+
 
 # Lee el archivo de centros y llena el diccionario centrosHash
 # con id_centro => nombre del centro
 sub readCentros {
-  my $centrosHashRef = shift;
-
-  open(my $centrosFile, "<$CENTROS") || die "ERROR: No puedo abrir el archivo $CENTROS -> $!\n";
-
-  # Ignoro el header
-  my $header = <$centrosFile>;
-  while (my $line = <$centrosFile>) {
-    chomp $line;
-    my @fields = split(/;/, $line);
-    $centrosHashRef->{$fields[0]} = $fields[1];
-  }
-
-  close($centrosFile);
+  fillHash($_[0], $CENTROS, (sub { return $_[0] } ),
+                            (sub { return $_[1] } ) );
 }
 
 
@@ -202,20 +213,9 @@ sub readCentros {
 # con id_actividad id_centro concatenados como clave, de esta forma es
 # sencillo luego verificar la existencia de esa combinación.
 sub readAxC {
-  my $axcHashRef = shift;
-
-  open(my $axcFile, "<$ACT_CENTROS") || die "ERROR: No puedo abrir el archivo $ACT_CENTROS -> $!\n";
-
-  # Ignoro el header
-  my $header = <$axcFile>;
-  while (my $line = <$axcFile>) {
-    chomp $line;
-    my @fields = split(/;/, $line);
-    # () utiliza menos espacio que 1
-    $axcHashRef->{$fields[0].$fields[1]} = ();
-  }
-
-  close($axcFile);
+  fillHash($_[0], $ACT_CENTROS,
+            (sub { return $_[0].$_[1] } ),
+            (sub { return () } ) );
 }
 
 
@@ -373,4 +373,10 @@ sub listadoPE {
 # listado de Control del Presupuesto Ejecutado
 sub listadoCPE {
   print "ListadoCPE!\n"
+
+
+
+  # if (match_glob("foo.*", "foo.bar")) {
+  #   print "matcheó!";
+  # }
 }
