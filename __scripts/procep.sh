@@ -98,7 +98,7 @@ do
 		#Si no existe el centro, el registro no es valido.
 		#Loggearlo
 		#Grabar registro rechazado
-		$log_command "procep" "Centro inexistente" "ERR" "1"
+		$log_command "procep" "Centro inexistente" "ERR" "0"
 		touch $pathRechazado
 		echo "$nombreArchivo;centro inexistente;$linea;$USER;$(fecha)">>$pathRechazado
 		((cantidadRechazados++))
@@ -118,7 +118,7 @@ do
 	if [ -z "$lineaActividades" ]
 	then
 		#Si no existe la actividad, el registro no es valido.
-		$log_command "procep" "Actividad inexistente" "ERR" "1"
+		$log_command "procep" "Actividad inexistente" "ERR" "0"
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;actividad inexistente;$linea;$USER;$(fecha)">>$pathRechazado
@@ -146,7 +146,7 @@ do
 	if [ -z "$lineaTrimestres" ]
 	then
 		#Si no existe el trimestre, el registro no es valido.
-		$log_command "procep" "Trimestre inexistente" "ERR" "1"
+		$log_command "procep" "Trimestre inexistente" "ERR" "0"
 		#Grabar registro rechazado
 		touch $pathRechazado
 		#touch "$GRUPO/$DIRPROC/rechazado-2016"	
@@ -181,20 +181,20 @@ do
 			#Validacion de rango de fecha
 			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -ne 1 ]
 			then
-				$log_command "procep" "La fecha no se corresponde con el trimestre indicado" "ERR" "1"			   
+				$log_command "procep" "La fecha no se corresponde con el trimestre indicado" "ERR" "0"			   
 				#Grabar registro rechazado
 				touch $pathRechazado
 				echo "$nombreArchivo;La fecha no se corresponde con el trimestre indicado;$linea;$USER;$(fecha)">>$pathRechazado
 			fi
 		else
-			$log_command "procep" "Fecha invalida" "ERR" "1"	
+			$log_command "procep" "Fecha invalida" "ERR" "0"	
 		    	#Grabar registro rechazado
 			touch $pathRechazado
 			echo "$nombreArchivo;Fecha invalida;$linea;$USER;$(fecha)">>$pathRechazado
 		fi
 	else
 		#Si el año no es correcto, el registro no es valido
-		$log_command "procep" "Año incorrecto" "ERR" "1"
+		$log_command "procep" "Año incorrecto" "ERR" "0"
 
 		#Grabar registro rechazado
 		touch $pathRechazado
@@ -209,7 +209,7 @@ do
 	#********************************
     if (( $(echo "$gasto 0" | awk '{print ($1 < $2)}') ))
 	then
-		$log_command "procep" "El gasto debe ser mayor a cero." "ERR" "1"
+		$log_command "procep" "El gasto debe ser mayor a cero." "ERR" "0"
 		touch $pathRechazado
 		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)">>$pathRechazado
 		((cantidadRechazados++))
@@ -222,9 +222,9 @@ do
 	
 	((cantidadAceptados++))
 done <$GRUPO/$DIROK/$archivo
-$log_command "procep" "Cantidad de registros leidos: $cantidadLeidos" "INFO" "1"
-$log_command "procep" "Cantidad de registros validados correctamente: $cantidadAceptados" "INFO" "1"
-$log_command "procep" "Cantidad de registros rechazados $cantidadRechazados" "INFO" "1"
+$log_command "procep" "Cantidad de registros leidos: $cantidadLeidos" "INFO" "0"
+$log_command "procep" "Cantidad de registros validados correctamente: $cantidadAceptados" "INFO" "0"
+$log_command "procep" "Cantidad de registros rechazados $cantidadRechazados" "INFO" "0"
 }
 
 if [ ! checkenv ]
@@ -235,7 +235,7 @@ fi
 
 cantidadArchivos=$(ls $GRUPO/$DIROK | wc -l)
 
-$log_command "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "1"
+$log_command "procep" "Cantidad de archivos a procesar: $cantidadArchivos" "INFO" "0"
 
 listaArchivos=$(ls $GRUPO/$DIROK)
 
@@ -244,7 +244,7 @@ do
 	#Verificacion de archivo duplicado.
 	if [ -f $GRUPO/$DIRPROC/proc/$archivo ]
 	then
-		$log_command "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "1"
+		$log_command "procep" "Archivo Duplicado. Se rechaza el archivo $archivo" "INFO" "0"
 		#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 		$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 	else
@@ -254,14 +254,14 @@ do
 		if [[ "$linea" =~ $regex ]]
 		then
 			#Validacion de campos
-			$log_command "procep" "Archivo a procesar $archivo" "INFO" "1"
+			$log_command "procep" "Archivo a procesar $archivo" "INFO" "0"
 			validarRegistros $archivo
 			
 			#Se mueve el archivo para evitar su reprocesamiento
 			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
 			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc "procep"
 		else
-			$log_command "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
+			$log_command "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "0"
 			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK
 			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRNOK "procep"
 		fi
