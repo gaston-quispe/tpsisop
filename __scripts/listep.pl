@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(GetOptions);
 use Text::Glob qw(match_glob);
+use Time::Piece;
 
 # Definiciones
 
@@ -30,6 +31,7 @@ my $ACTIVIDADES;
 my $ACT_CENTROS;
 my $SANCIONADO;
 my $ACEPTADO;
+my $TRIMESTRES;
 my $OUTDIR;
 
 # El separador a usar en los archivos de salida
@@ -38,8 +40,12 @@ my $SEP = ';';
 # opción ct, si es true ordena primero por trimestre y luego por código de centro
 my $porTrimestre = '';
 
-# Lista de actividades a filtrar por
+# Lista de actividades a filtrar por para el listado de presupuesto ejecutado.
 my @filtroActividades;
+
+# Listas de trimestres y centros a filtrar por para el listado de control.
+my @filtroTrimestres,
+my @filtroCentros,
 
 my $WRITE = '';
 
@@ -74,6 +80,8 @@ sub procesarParametros {
     "anio:s" => \$ANIO,
     "write" => \$WRITE,
     "actividad:s" => \@filtroActividades,
+    "trimestre|t:s" => \@filtroTrimestres,
+    "centro:s" => \@filtroCentros,
   );
   return 1;
 }
@@ -121,6 +129,20 @@ sub mostrarAyuda {
 
                         listep.pl ejec -ac "act 1" -ac "act 2"
 
+    Comando cont:
+      Devuelve el listado de control sobre el presupuesto ejecutado para un año
+      presupuestario especificado.
+
+      Parametros:
+      -t, --trimestre  El o los trimestres, para los cuales se va a generar el
+                       listado. Se pueden especificar multiples trimestres.
+
+      -c, --centro     El o los centros por los cuales se desea filtrar el listado.
+                       Se pueden especificar multiples centros. Se puede especificar
+                       un rango de centros de la siguiente forma:
+
+                       listep.pl cont -c "0.0.0.1-3*"
+
   })  =~ s/^ {4}//mg;
 
   print $helpMessage;
@@ -147,6 +169,7 @@ sub main() {
   $ACTIVIDADES = $GRUPO . '/' . $DIRMAE . '/actividades.csv';
   $ACT_CENTROS = $GRUPO . '/' . $DIRMAE . '/tabla-AxC.csv';
   $SANCIONADO = $GRUPO . '/' . $DIRMAE . '/sancionado-' . $ANIO . '.csv';
+  $TRIMESTRES = $GRUPO . '/' . $DIRMAE . '/trimestres.csv';
   $OUTDIR = $GRUPO . '/' . $DIRINFO;
 
   $ACEPTADO = $GRUPO . '/' . $DIRPROC . '/aceptado-' . $ANIO;
@@ -159,7 +182,6 @@ sub main() {
     listadoCPE();
   }
 }
-
 
 main();
 
@@ -178,6 +200,12 @@ sub writeOutput {
   open(my $fh, '>', $filename) or die "ERROR: No puedo abrir el archivo $filename -> $!\n";
   print $fh $content;
   close $fh;
+}
+
+# Convierte un fecha en formato dd/mm/YYYY a YYYYmmdd
+sub parseDate {
+  my $d = Time::Piece->strptime($_[0], "%d/%m/%Y");
+  return $d->strftime("%Y%m%d");
 }
 
 # Esta subrutina toma los siguientes parametros:
@@ -382,7 +410,7 @@ sub listadoPE {
 #*******************************************************************
 #
 # Rutina de listado de Control del Presupuesto Ejecutado
-# Necesito archivos: AxC, los sancionados y los aceptados de un año
+# Necesita archivos: AxC, los sancionados y los aceptados de un año, trimestres
 #
 #*******************************************************************
 sub listadoCPE {
@@ -392,20 +420,47 @@ sub listadoCPE {
   my %sancionadoHash;
   readSancionado(\%sancionadoHash);
 
-  # my %sancionadoHash;
-  # readSancionado(\%sancionadoHash);
+  my %trimestreHash;
+  fillHash(\%trimestreHash, $TRIMESTRES, (sub { return $_[1] } ),
+                                         (sub { return parseDate($_[2]) } ) );
 
   my $output = join($SEP, ('ID', 'FECHA MOV','CENTRO','ACTIVIDAD','TRIMESTRE','IMPORTE',
                            'SALDO por TRIMESTRE','CONTROL','SALDO ACUMULADO')) . "\n";
 
   open(my $aceptadoFile, "<$ACEPTADO") || die "ERROR: No puedo abrir el archivo $ACEPTADO -> $!\n";
 
+  print join(',', @filtroTrimestres);
   my @lines;
   while (my $line = <$aceptadoFile>) {
     chomp($line);
+
     my @fields = split(/;/, $line);
 
-    push(@lines, [$fields[0], $fields[1], $fields[2], $fields[9], $fields[4], $fields[5]]);
+    # Verifico si el filtro está definido y el trimestre está entre los valores
+    # a filtrar
+    if ( @filtroTrimestres && !grep(/^$fields[4]$/, @filtroTrimestres) ) {
+      next;
+    }
+
+    # Verifico que el centro cumpla con alguno de los patrones definidos
+    if (@filtroCentros) {
+      my $cumplePatron = 0;
+      foreach my $patron (@filtroCentros) {
+        if (match_glob($patron, $fields[2])) {
+          $cumplePatron = 1;
+          last;
+        }
+      }
+      if (!$cumplePatron) {
+        next;
+      }
+    }
+
+    # Guardo los campos en el orden, en el que tienen que aparecer en el listado
+    # final. Agrego el id de actividad, que no aparece en el listado, pero la
+    # uso para verificar gastos fuera de la planificación
+    push(@lines, [$fields[0], $fields[1], $fields[2], $fields[3],
+                  $fields[4], $fields[5], $fields[7]]);
 
   }
 
@@ -421,20 +476,31 @@ sub listadoCPE {
 
     if ($key ne $currentKey) {
       # Hay que agregar la linea del presupuesto trimestral sancionado
-
       $totalTrimestre = commaToDot($sancionadoHash{$key});
       $total += $totalTrimestre;
-      # TODO: agregar fecha del archivo trimestres
-      $output .= join($SEP, ('(++)', 'fecha', $fields[2], '0', $fields[4],
+
+      $output .= join($SEP, ('(++)', $trimestreHash{$fields[4]}, $fields[2], '0', $fields[4],
                              dotToComma($totalTrimestre), '', dotToComma($total)));
       $output .= "\n";
       $currentKey = $key;
     }
 
+    my $actividad = pop @fields;
+    my $control = '';
+    # Verifico si en el diccionario de AxC aparece id_actividad y id_centro como clave
+    if (! exists $axcHash{$actividad.$fields[2]}) {
+      $control .= "gasto fuera de planificación"
+    }
+
     my $importe = commaToDot($fields[5]);
     $totalTrimestre -= $importe;
     $total -= $importe;
-    push(@fields, (dotToComma($totalTrimestre), '', dotToComma($total)));
+
+    if ($totalTrimestre < 0) {
+      $control .= (($control) ? '. ' : '') . "presupuesto excedido";
+    }
+
+    push(@fields, (dotToComma($totalTrimestre), $control, dotToComma($total)));
     $output .= join($SEP, @fields) . "\n";
   }
 
@@ -442,7 +508,8 @@ sub listadoCPE {
   $output .= ' (*)';
 
   print $output;
-  # if (match_glob("foo.*", "foo.bar")) {
-  #   print "matcheó!";
-  # }
+
+  if ($WRITE) {
+    writeOutput("cont_$ANIO", 'csv', $output);
+  }
 }
