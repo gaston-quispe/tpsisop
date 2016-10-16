@@ -164,7 +164,7 @@ do
 	
 	#echo "Nombre trimestre: $nombreTrimestre"
 	#echo "Año trimestre: $anioTrimestre"
-	anioCorriente="2016"
+    anioCorriente=$(date +"%Y")
 	if [ "$anioTrimestre" == "$anioCorriente" ]
 	then	
 		#echo "Año igual al año corriente"
