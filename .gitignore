@@ -4,3 +4,4 @@ EPLAM
 *.tar
 *.gzip
 ~*
+.DS_Store

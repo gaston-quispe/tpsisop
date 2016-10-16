@@ -11,9 +11,10 @@
 # ******************************************************************
 
 log_command=logep.sh
+DATE=${DATE_COMMAND:-date}
 
 function fecha {
-	date "+Fecha: %d/%m/%y Hora: %H:%M:%S"
+	$DATE "+Fecha: %d/%m/%y Hora: %H:%M:%S"
 }
 
 function yyyymmdd {
@@ -22,7 +23,7 @@ function yyyymmdd {
     if [[ "$fecha" =~ $regex ]]
     then
         fechaReformateada="${fecha:6:4}${fecha:3:2}${fecha:0:2}"
-        echo $( date -d "$fechaReformateada" +%Y%m%d)
+        echo $( $DATE -d "$fechaReformateada" +%Y%m%d)
     else
         echo $fecha
     fi
@@ -58,9 +59,9 @@ DONE=false
 until $DONE
 do
     read -r linea || DONE=true
-         
+
 	#echo "Registro a procesar: $linea"
-	
+
 	#************************************
 	# Extraccion de campos del registro *
 	#************************************
@@ -83,12 +84,12 @@ do
 	#Extraccion del año presupuestario
 	IFS=" " read -ra FECHA_PRESUPUESTO <<< "$trimestre"
 	ANIO_PRESUPUESTARIO=${FECHA_PRESUPUESTO[2]}
-	
+
 	#Paths donde mover los registros
 	pathRechazado=$GRUPO/$DIRPROC/rechazado-$ANIO_PRESUPUESTARIO
 	pathAceptado=$GRUPO/$DIRPROC/aceptado-$ANIO_PRESUPUESTARIO
 
-	
+
 	#**********************************
 	#	Validacion de Centro      *
 	#**********************************
@@ -149,9 +150,9 @@ do
 		$log_command "procep" "Trimestre inexistente" "ERR" "0"
 		#Grabar registro rechazado
 		touch $pathRechazado
-		#touch "$GRUPO/$DIRPROC/rechazado-2016"	
+		#touch "$GRUPO/$DIRPROC/rechazado-2016"
 		echo "$nombreArchivo;Trimestre inválido: nombre inexistente;$linea;$USER;$(fecha)">>$pathrechazado
-		((cantidadRechazados++))		
+		((cantidadRechazados++))
 		continue
 	fi
 
@@ -161,12 +162,12 @@ do
 	nombreTrimestre=${CAMPOS_TRIMESTRE[1]}
 	FDESDE_TRI=${CAMPOS_TRIMESTRE[2]}
 	FHASTA_TRI=${CAMPOS_TRIMESTRE[3]}
-	
+
 	#echo "Nombre trimestre: $nombreTrimestre"
 	#echo "Año trimestre: $anioTrimestre"
-    anioCorriente=$(date +"%Y")
+    anioCorriente=$($DATE +"%Y")
 	if [ "$anioTrimestre" == "$anioCorriente" ]
-	then	
+	then
 		#echo "Año igual al año corriente"
 
 		#*********************************
@@ -177,17 +178,17 @@ do
 		IFS="_" read -ra CAMPOS_ARCHIVO <<< "$nombreArchivo"
 		fechaArchivo=${CAMPOS_ARCHIVO[3]}
 		if [ $fecha -le "${fechaArchivo:0:8}" -o $fecha -eq "${fechaArchivo:0:8}" ]
-		then	
+		then
 			#Validacion de rango de fecha
 			if [ $(fechaEntre $fecha $FDESDE_TRI $FHASTA_TRI) -ne 1 ]
 			then
-				$log_command "procep" "La fecha no se corresponde con el trimestre indicado" "ERR" "0"			   
+				$log_command "procep" "La fecha no se corresponde con el trimestre indicado" "ERR" "0"
 				#Grabar registro rechazado
 				touch $pathRechazado
 				echo "$nombreArchivo;La fecha no se corresponde con el trimestre indicado;$linea;$USER;$(fecha)">>$pathRechazado
 			fi
 		else
-			$log_command "procep" "Fecha invalida" "ERR" "0"	
+			$log_command "procep" "Fecha invalida" "ERR" "0"
 		    	#Grabar registro rechazado
 			touch $pathRechazado
 			echo "$nombreArchivo;Fecha invalida;$linea;$USER;$(fecha)">>$pathRechazado
@@ -199,11 +200,11 @@ do
 		#Grabar registro rechazado
 		touch $pathRechazado
 		echo "$nombreArchivo;Trimestre inválido: trimestre no es del año presupuestario corriente;$linea;$USER;$(fecha)">>$pathRechazado
-		((cantidadRechazados++))		
+		((cantidadRechazados++))
 		continue
 	fi
 
-	
+
 	#********************************
 	#	Validacion de Gasto     *
 	#********************************
@@ -215,11 +216,11 @@ do
 		((cantidadRechazados++))
 		continue
 	fi
-	
+
 	#Si el registro paso las validaciones, lo grabo como aceptado.
 	touch $pathAceptado
 	echo "$id;$fecha;$centro;$actividad;$trimestre;$gasto;$nombreArchivo;$CODIGO_ACTIVIDAD;$NOMBRE_PROVINCIA;$NOMBRE_CENTRO">>$pathAceptado
-	
+
 	((cantidadAceptados++))
 done <$GRUPO/$DIROK/$archivo
 $log_command "procep" "Cantidad de registros leidos: $cantidadLeidos" "INFO" "0"
@@ -256,7 +257,7 @@ do
 			#Validacion de campos
 			$log_command "procep" "Archivo a procesar $archivo" "INFO" "0"
 			validarRegistros $archivo
-			
+
 			#Se mueve el archivo para evitar su reprocesamiento
 			#mv $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc
 			$GRUPO/$DIRBIN/movep.sh $GRUPO/$DIROK/$archivo $GRUPO/$DIRPROC/proc "procep"
