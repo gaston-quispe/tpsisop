@@ -201,6 +201,24 @@ sub fillHash {
 }
 
 
+# Esta subrutina convierte las comas de una string a puntos, es necesario
+# para tratar números con punto flotante correctamente, ya que en los csvs
+# aparecen con comas.
+sub commaToDot {
+  my($value) = @_;
+  $value =~ s/\,/./g;
+  return $value;
+}
+
+# Viceversa de la anterior
+sub dotToComma {
+  my($value) = @_;
+  $value = sprintf("%.2f", $value);
+  $value =~ s/\./,/g;
+  return $value;
+}
+
+
 # Lee el archivo de centros y llena el diccionario centrosHash
 # con id_centro => nombre del centro
 sub readCentros {
@@ -215,26 +233,18 @@ sub readCentros {
 sub readAxC {
   fillHash($_[0], $ACT_CENTROS,
             (sub { return $_[0].$_[1] } ),
-            (sub { return () } ) );
+            (sub { return  } ) );
 }
 
 
-# Esta subrutina convierte las comas de una string a puntos, es necesario
-# para tratar números con punto flotante correctamente, ya que en los csvs
-# aparecen con comas.
-sub commaToDot {
-  my($value) = @_;
-  $value =~ s/\,/./g;
-  return $value;
+# Lee el archivo de sancionados y llena el hash pasado por referencia
+# id_centro y trimestre concatenados como clave, y la suma de los saldos
+# como valor
+sub readSancionado {
+  fillHash($_[0], $ACT_CENTROS,
+            (sub { return $_[0].$_[1] } ),
+            (sub { return  commaToDot($_[2]) + commaToDot($_[3]) } ) );
 }
-
-sub dotToComma {
-  my($value) = @_;
-  $value = sprintf("%.2f", $value);
-  $value =~ s/\./,/g;
-  return $value;
-}
-
 
 #*******************************************************************
 #
@@ -314,15 +324,14 @@ sub listadoPS {
 #*******************************************************************
 #
 # Rutina de listado del Presupuesto Ejecutado
-# Necesito archivos: AxC, los ejecutados de un año
+# Necesito archivos: AxC, los aceptados de un año
 #
 #*******************************************************************
 sub listadoPE {
   my %axcHash;
 
-  readAxC(\%axcHash);
   # Leer la tabla AxC
-
+  readAxC(\%axcHash);
 
   my $output = join($SEP, ('Fecha','Centro','Nom Cen','cod Act','Actividad',
                            'Trimestre','Gasto','Provincia','Control')) . "\n";
@@ -370,12 +379,40 @@ sub listadoPE {
 }
 
 
-# listado de Control del Presupuesto Ejecutado
+#*******************************************************************
+#
+# Rutina de listado de Control del Presupuesto Ejecutado
+# Necesito archivos: AxC, los sancionados y los aceptados de un año
+#
+#*******************************************************************
 sub listadoCPE {
-  print "ListadoCPE!\n"
+  my %axcHash;
+  readAxC(\%axcHash);
 
+  my %sancionadoHash;
+  readSancionado(\%sancionadoHash);
 
+  my $output = join($SEP, ('ID', 'FECHA MOV','CENTRO','ACTIVIDAD','TRIMESTRE','IMPORTE',
+                           'SALDO por TRIMESTRE','CONTROL','SALDO ACUMULADO')) . "\n";
 
+  open(my $aceptadoFile, "<$ACEPTADO") || die "ERROR: No puedo abrir el archivo $ACEPTADO -> $!\n";
+
+  my @lines;
+  while (my $line = <$aceptadoFile>) {
+    chomp($line);
+    my @fields = split(/;/, $line);
+
+    push(@lines, [$fields[0], $fields[1], $fields[2], $fields[7], $fields[4], $fields[5]]);
+
+  }
+
+  @lines = sort { ($a->[2] cmp $b->[2]) or ($a->[1] cmp $b->[1]) } @lines;
+
+  foreach my $line (@lines) {
+    $output .= join($SEP, @{$line}) . "\n";
+  }
+
+  print $output;
   # if (match_glob("foo.*", "foo.bar")) {
   #   print "matcheó!";
   # }
