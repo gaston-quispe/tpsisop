@@ -10,11 +10,127 @@
 #
 # ******************************************************************
 
+function fecha {
+	date "+Fecha: %d/%m/%y Hora: %H:%M:%S"
+}
+
 function checkenv {
   if [[ -z $GRUPO || -z $DIRBIN || -z $DIRMAE || -z $DIRREC || -z $DIROK ||
         -z $DIRPROC || -z $DIRINFO || -z $DIRLOG || -z $DIRNOK ]]; then
     return 1;
   fi
+}
+
+function validarCampos {
+nombreArchivo=$1
+cantidadAceptados=0
+cantidadRechazados=0
+
+while read -r linea
+do
+	#Validacion Centro de Presupuestos
+	IFS=";" read -ra CAMPOS <<< "$linea"
+	id=${CAMPOS[0]}
+	fecha=${CAMPOS[1]}
+	centro=${CAMPOS[2]}
+	actividad=${CAMPOS[3]}
+	trimestre=${CAMPOS[4]}
+	gasto=${CAMPOS[5]}
+
+	#Extraccion de campos
+	IFS=" " read -ra FECHA_PRESUPUESTO <<< "$trimestre"
+	ANIO_PRESUPUESTARIO=${FECHA_PRESUPUESTO[2]}
+
+	pathRechazado=$GRUPO/$DIRPROC/rechazado-$ANIO_PRESUPUESTARIO
+	pathAceptado=$GRUPO/$DIRPROC/aceptado-$ANIO_PRESUPUESTARIO
+	
+
+	#Validacion de Centro
+	lineaCentros=$( grep "$centro" $GRUPO/$DIRMAE/centros.csv )
+	if [ -z "$lineaCentros" ]
+	then
+		#Si no existe el centro, el registro no es valido.
+		#Loggearlo
+		#Grabar registro rechazado
+		touch $pathRechazado
+		echo "$nombreArchivo;centro inexistente;$linea;$USER;$(fecha)"
+		cantidadRechazados+=1
+		continue
+	fi
+
+	#Extraccion de campos
+	IFS=";" read -ra CAMPOS_CENTRO <<< "$lineaCentros"
+	NOMBRE_CENTRO=${CAMPOS_CENTRO[1]}
+	NOMBRE_PROVINCIA=""
+
+	#Validacion de Actividad
+	lineaActividades=$( grep "$actividad" $GRUPO/$DIRMAE/actividades.csv )
+	if [ -z "$lineaActividades" ]
+	then
+		#Si no existe la actividad, el registro no es valido.
+		#Loggearlo
+		#Grabar registro rechazado
+		touch $pathRechazado
+		echo "$nombreArchivo;actividad inexistente;$linea;$USER;$(fecha)"
+		cantidadRechazados+=1
+		continue
+	fi
+
+	#Extraccion de campos
+	IFS=";" read -ra CAMPOS_ACTIVIDAD <<< "$lineaActividades"
+	CODIGO_ACTIVIDAD=${CAMPOS_ACTIVIDAD[0]}
+
+	#Validacion de Trimestre
+	lineaTrimestres=$( grep "$centro" $GRUPO/$DIRMAE/trimestres.csv )
+	if [ -z "$lineaTrimestres" ]
+	then
+		#Si no existe el trimestre, el registro no es valido.
+		#Loggearlo
+		#Grabar registro rechazado
+		touch $pathRechazado
+		echo "$nombreArchivo;trimestre inexistente;$linea;$USER;$(fecha)"
+		cantidadRechazados+=1		
+		continue
+	fi
+
+	#Extraccion de campos
+	IFS=";" read -ra CAMPOS_TRIMESTRE <<< "$lineaTrimestres"
+	anioTrimestre=${CAMPO_TRIMESTRES[0]}
+	nombreTrimestre=${CAMPO_TRIMESTRES[1]}
+	FDESDE_TRI=${CAMPO_TRIMESTRES[2]}
+	FHASTA_TRI=${CAMPO_TRIMESTRES[3]}
+	
+	anioCorriente="2016"
+	if [ "$anioTrimestre" == "$anioCorriente" ]
+	then	
+		#Validacion de fecha valida
+		echo "Prueba"
+		#Validacion de rango de fecha
+	else
+		#Si el anio no es correcto, el registro no es valido
+		#Loggearlo
+		#Grabar registro rechazado
+		touch $pathRechazado
+		echo "$nombreArchivo;año no es correcto;$linea;$USER;$(fecha)"
+		cantidadRechazados+=1		
+		continue
+	fi
+
+	#Validacion de Gasto
+	if [ $gasto < 0 ]
+	then
+		#Grabar el registro rechazado. Motivo: El gasto debe ser mayor a cero.
+		touch $pathRechazado
+		echo "$nombreArchivo;importe invalido;$linea;$USER;$(fecha)"
+		cantidadRechazados+=1
+		continue
+	fi
+	
+	#Si el registro paso las validaciones, lo grabo como aceptado.
+	touch $pathAceptado
+	echo "$id;$fecha;$centro;$actividad;$trimestre;$gasto;$nombreArchivo;$CODIGO_ACTIVIDAD;$NOMBRE_PROVINCIA;$NOMBRE_CENTRO"
+	cantidadAceptados+=1
+done <$GRUPO/$DIRREC/$archivo
 }
 
 if [ ! checkenv ]
@@ -50,68 +166,7 @@ do
 			echo "ok"
 			#Validacion de campos
 			$ARCHLOGGER "procep" "Archivo a procesar $archivo" "INFO" "1"
-			while read -r linea
-			do
-				#Validacion Centro de Presupuestos
-				centro=$( echo $linea | cut -d";" -f3 )
-				while read -r lineaCentros
-				do
-					centroValido=$( echo $lineaCentros | cut -d';' -f1 )
-					if [ $centro == $centroValido ]
-					then
-						echo "centro valido"
-					fi
-				done <$GRUPO/$DIRMAE/centros.csv
-
-				#Validacion de Actividad
-				actividad=$( echo $linea | cut -d';' -f4 )
-				echo $actividad
-				while read -r lineaActividades
-				do
-					actividadValida=$( echo $lineaActividades | cut -d';' -f4 )
-					#echo $actividadValida
-					if [ "$actividad" == "$actividadValida" ]
-					then
-						echo "actividad valida"
-					fi
-				done <$GRUPO/$DIRMAE/actividades.csv
-
-				#Validacion de Trimestre
-				trimestre=$( echo $linea | cut -d';' -f5 )
-				echo $trimestre
-				while read -r lineaTrimestres
-				do
-					trimestreValido=$( echo $lineaTrimestres | cut -d';' -f2 )
-					if [ "$trimestre" == "$trimestreValido" ]
-					then
-						#Validacion año presupuestario corriente.
-						anioTrimestre=$( echo $lineaTrimestres | cut -d';' -f1 )
-						anioCorriente="2016"
-						if [ "$anioTrimestre" == "$anioCorriente" ]
-						then	
-							#Validacion de Fecha
-							fecha=$( echo $linea | cut -d';' -f2 )
-							echo $fecha
-							FDESDE_TRI=$( echo $lineaTrimestres | cut -d';' -f3 )
-							FHASTA_TRI=$( echo $lineaTrimestres | cut -d';' -f4 )
-							#Verificar rango de fecha
-							echo "trimestre valido"
-						else
-							echo "trimestre invalido"
-						fi
-					fi
-				done <$GRUPO/$DIRMAE/trimestres.csv
-
-				#Validacion de Gasto
-				gasto=$( echo $linea | cut -d';' -f6 )
-				if [ $gasto > 0 ]
-				then
-					echo "Gasto permitido"
-				else
-					echo "El gasto debe ser mayor a cero."
-				fi
-
-			done <$GRUPO/$DIRREC/$archivo
+			validarCampos $archivo
 		else
 			$ARCHLOGGER "procep" "Estructura inesperada. Se rechaza el archivo $archivo." "INFO" "1"
 			#mv $GRUPO/$DIRREC/$archivo $GRUPO/$DIRNOK
