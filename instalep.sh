@@ -197,7 +197,13 @@ then
     echo "*   *  * * EL SISTEMA EPLAM YA SE ENCUENTRA * *  *   *"
     echo "*   *  * * * * * * * INSTALADO!!! * * * * * * *  *   *"
     echo "******************************************************"
+
+	$ARCHLOGGER "instalep" "El sistema ya se encuentra instalado" "INFO" "0" "$GRUPO/$DIRCONF"
+
 	listarDirectorios
+	$ARCHLOGGER "instalep" "Fin del proceso. Usuario: $USER" "INFO" "1" "$GRUPO/$DIRCONF"	
+	fechaAux=$(fecha)
+	$ARCHLOGGER "instalep" "$fechaAux" "INFO" "1" "$GRUPO/$DIRCONF"
 	exit 0
 else
     echo "******************************************************"
@@ -247,15 +253,27 @@ do
 				echo DIRNOK=$DIRNOK=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
                 echo LOGSIZE=2=$USER=$(date "+%d/%m/%Y %I:%M %P")>>$ARCHCONF
 
-				echo "Instalando Programas y Funciones"
-				cp __scripts/* "$GRUPO/$DIRBIN"
-                chmod +x "$GRUPO/$DIRBIN"/*.sh
+				$ARCHLOGGER "instalep" "Instalando Programas y Funciones" "INFO" "1" "$GRUPO/$DIRCONF"
 
-				echo "Instalando Archivos Maestros y Tablas"
+				$ARCHLOGGER "instalep" "Instalando Archivos Maestros y Tablas" "INFO" "1" "$GRUPO/$DIRCONF"
+				#DESCOMENTAR PARA LA ENTREGA Y BORRAR CP
+				#mv __mae/* "$GRUPO/$DIRMAE"
 				cp __mae/* "$GRUPO/$DIRMAE"
 
-				echo "Instalando Archivos de Novedades"
+				$ARCHLOGGER "instalep" "Instalando Archivos de Novedades" "INFO" "1" "$GRUPO/$DIRCONF"
+				#DESCOMENTAR PARA LA ENTREGA Y BORRAR CP
+				#mv __nov/* "$GRUPO/$DIRREC"
 				cp __nov/* "$GRUPO/$DIRREC"
+
+		$ARCHLOGGER "instalep" "Fin del proceso. Usuario: $USER" "INFO" "1" "$GRUPO/$DIRCONF"
+		fechaAux=$(fecha)
+		$ARCHLOGGER "instalep" "$fechaAux" "INFO" "1" "$GRUPO/$DIRCONF"
+
+		# Mover el logger solo cuando terminaron de pasar todos los logs pertinentes
+				#DESCOMENTAR PARA LA ENTREGA Y BORRAR CP
+				#mv __scripts/* "$GRUPO/$DIRBIN"
+				cp __scripts/* "$GRUPO/$DIRBIN"
+                chmod +x "$GRUPO/$DIRBIN"/*.sh
 
                 instalacionFinalizada=true
                 break;;
@@ -270,13 +288,12 @@ do
 					setearDirectorios
 				else
 					instalacionFinalizada=true
+					$ARCHLOGGER "instalep" "Fin del proceso. Usuario: $USER" "INFO" "1" "$GRUPO/$DIRCONF"
+					fechaAux=$(fecha)
+					$ARCHLOGGER "instalep" "$fechaAux" "INFO" "1" "$GRUPO/$DIRCONF"
 				fi
 		            break;;
 		    * ) echo "Ingrese una opción válida.";;
 		esac
 	done
 done
-
-$ARCHLOGGER "instalep" "Fin del proceso. Usuario: $USER" "INFO" "1" "$GRUPO/$DIRCONF"
-fechaAux=$(fecha)
-$ARCHLOGGER "instalep" "$fechaAux" "INFO" "1" "$GRUPO/$DIRCONF"

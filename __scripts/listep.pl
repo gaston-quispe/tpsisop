@@ -94,7 +94,7 @@ sub procesarParametros {
 #*******************************************************************
 sub mostrarAyuda {
   (my $helpMessage = q{Uso:
-    listep.pl [comando] [--write|-w] [--tc] [--year|-y]
+    listep.pl [comando] [--write|-w] [--tc] [--anio|-a] [--actividad|-ac] [--trimestre|-t] [--centro|-c]
 
     Comando puede ser:
         - sanc: Para listado del Presupuesto Sancionado
