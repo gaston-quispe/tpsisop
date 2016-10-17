@@ -77,7 +77,7 @@ sub procesarParametros {
 
   GetOptions (
     "tc" => \$porTrimestre,
-    "anio:s" => \$ANIO,
+    "anio|a:s" => \$ANIO,
     "write" => \$WRITE,
     "actividad:s" => \@filtroActividades,
     "trimestre|t:s" => \@filtroTrimestres,
