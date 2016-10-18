@@ -150,14 +150,16 @@ function verificarFecha() {
 	 fi
 
 #verifico correcta fecha
-         fechaFormat=$($DATE -d $fecha +%F)
-         miFecha="$($DATE --date="$fechaFormat" +%s)"
-	$DATE "+%F" -d "$fechaFormat" > /dev/null
+        $DATE "+%F" -d $fecha &> /dev/null      
 	if [ $? -eq '1' ]
 	then
-                $log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha incorrecta" "INFO" "0"
+		$log_command "demonep" "El archivo: $1 fue rechazado, motivo: fecha $fecha incorrecta" "INFO" "0"
 		return 1
 	fi
+
+	fechaFormat=$($DATE -d $fecha +%F)
+        miFecha="$($DATE --date="$fechaFormat" +%s)"		
+        $DATE "+%F" -d "$fechaFormat" > /dev/null
 
 #verifico que la fecha no sea mayor a la fecha actual
 	if [ $miFecha -gt $fechaActual ]
